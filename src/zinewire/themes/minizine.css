@@ -1,0 +1,119 @@
+/* zinewire - Mini Zine Layout (one-sheet fold-and-cut) */
+
+/* The sheet is a landscape page divided into a 4×2 grid.
+   Each cell contains one page of the mini zine.
+   Some cells are rotated 180° for correct reading after folding. */
+
+.mini-sheet {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    width: var(--sheet-width);
+    height: var(--sheet-height);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Each cell holds one page */
+.mini-cell {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Rotated cells (180°) */
+.mini-cell.mini-rotated {
+    transform: rotate(180deg);
+}
+
+/* Override page styling inside mini zine */
+.mini-sheet .page {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    position: relative;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    /* Tighter margins for mini format */
+    padding: 3mm !important;
+    font-size: 6pt;
+    line-height: 1.3;
+}
+
+/* Scale down typography for mini format */
+.mini-sheet h1 { font-size: 10pt; margin: 1mm 0; }
+.mini-sheet h2 { font-size: 8pt; margin: 1mm 0; }
+.mini-sheet h3 { font-size: 7pt; margin: 0.5mm 0; }
+.mini-sheet p { margin: 0.5mm 0; }
+.mini-sheet ul, .mini-sheet ol { margin: 0.5mm 0; padding-left: 3mm; }
+.mini-sheet li { margin: 0.2mm 0; }
+.mini-sheet blockquote { margin: 0.5mm 1mm; padding-left: 1.5mm; }
+.mini-sheet pre { font-size: 5pt; padding: 1mm; margin: 0.5mm 0; }
+.mini-sheet code { font-size: 5pt; }
+.mini-sheet table { font-size: 5pt; }
+
+/* Page numbers: smaller for mini */
+.mini-sheet .page::after {
+    font-size: 5pt !important;
+    bottom: 1mm !important;
+}
+
+/* Cover page in mini: centered title */
+.mini-sheet .page.cover-page::after {
+    display: none !important;
+}
+
+/* Blank page placeholder */
+.mini-sheet .blank-page {
+    width: 100%;
+    height: 100%;
+}
+
+/* Cut guide: dashed line across the center horizontal fold */
+.mini-sheet::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    /* Center cut: only the middle 50% of width */
+    left: 25%;
+    width: 50%;
+    border-top: 0.5px dashed #ccc;
+    pointer-events: none;
+}
+
+/* Screen preview */
+@media screen {
+    body {
+        background: #e0e0e0 !important;
+    }
+
+    .mini-sheet {
+        margin: 2em auto;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        position: relative;
+    }
+
+    .mini-cell {
+        border: 0.5px dashed #ddd;
+    }
+}
+
+/* Print */
+@media print {
+    body {
+        background: none !important;
+    }
+
+    .mini-sheet {
+        position: relative;
+    }
+
+    .mini-cell {
+        border: none;
+    }
+}

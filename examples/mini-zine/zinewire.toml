@@ -1,0 +1,10 @@
+[zine]
+title = "How to Make a Zine"
+page-size = "half-letter"
+
+[theme]
+color-border = "#333333"
+color-text-muted = "#666666"
+color-table-header-bg = "#000000"
+color-table-header-text = "#ffffff"
+color-accent = "#d4380d"

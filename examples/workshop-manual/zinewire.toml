@@ -1,0 +1,8 @@
+[zine]
+title = "Screenprinting at Home"
+mode = "manual"
+files = ["manual.md"]
+
+[theme]
+color-accent = "#7c3aed"
+font-heading = "Space Grotesk"

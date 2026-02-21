@@ -1,0 +1,14 @@
+{
+    "columns": ["Plant", "Spring", "Summer", "Autumn", "Winter"],
+    "display_columns": ["Plant", "Mar-May", "Jun-Aug", "Sep-Nov", "Dec-Feb"],
+    "align": ["left", "center", "center", "center", "center"],
+    "items": [
+        {"plant": "Dandelion", "spring": "leaves", "summer": "flowers", "autumn": "roots", "winter": "---"},
+        {"plant": "Nettle", "spring": "tips", "summer": "seeds", "autumn": "---", "winter": "---"},
+        {"plant": "Elderflower", "spring": "---", "summer": "flowers", "autumn": "berries", "winter": "---"},
+        {"plant": "Blackberry", "spring": "---", "summer": "---", "autumn": "fruit", "winter": "---"},
+        {"plant": "Wild Garlic", "spring": "leaves", "summer": "---", "autumn": "---", "winter": "bulbs"},
+        {"plant": "Rosehip", "spring": "---", "summer": "---", "autumn": "hips", "winter": "hips"},
+        {"plant": "Hawthorn", "spring": "leaves", "summer": "---", "autumn": "berries", "winter": "---"}
+    ]
+}

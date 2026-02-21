@@ -1,0 +1,11 @@
+[zine]
+title = "Urban Foraging Field Guide"
+files = ["cover.md", "basics.md", "plants.md", "reference.md"]
+
+[theme]
+font-heading = "Bitter"
+color-border = "#333333"
+color-text-muted = "#666666"
+color-table-header-bg = "#000000"
+color-table-header-text = "#ffffff"
+color-accent = "#2d6a4f"

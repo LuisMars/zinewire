@@ -1,0 +1,177 @@
+/* zinewire - Booklet Imposition Layout (Saddle-Stitch) */
+
+/* NOTE: @page rule is injected by the template with literal values.
+   CSS calc() and var() do NOT work inside @page in most browsers. */
+
+/* Hide preview-only elements */
+.preview-notice,
+.file-indicator,
+.page-fill-badge {
+    display: none !important;
+}
+
+/* Sheet container: one physical side of a landscape sheet */
+.sheet {
+    width: calc(2 * var(--page-width, 148mm));
+    height: var(--page-height, 210mm);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Left and right halves */
+.imposed-left,
+.imposed-right {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Override inner page styling */
+.sheet .page {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+    margin: 0;
+    position: relative;
+    box-sizing: border-box;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+}
+
+/* Left page: spine on right edge */
+.imposed-left .page {
+    padding-left: var(--page-margin-horizontal, 8mm) !important;
+    padding-right: var(--page-margin-spine, 12mm) !important;
+    padding-top: var(--page-margin-vertical, 10mm) !important;
+    padding-bottom: var(--page-margin-vertical, 10mm) !important;
+}
+
+/* Right page: spine on left edge */
+.imposed-right .page {
+    padding-left: var(--page-margin-spine, 12mm) !important;
+    padding-right: var(--page-margin-horizontal, 8mm) !important;
+    padding-top: var(--page-margin-vertical, 10mm) !important;
+    padding-bottom: var(--page-margin-vertical, 10mm) !important;
+}
+
+/* Spine line (screen preview only) */
+.sheet::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed #ddd;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Override page numbers with original number from data attribute */
+.sheet .page::after {
+    content: attr(data-page-number) !important;
+    display: block !important;
+    counter-increment: none !important;
+}
+
+/* Odd original pages: number on outside-right */
+.sheet .page.page-odd::after {
+    right: var(--page-margin-horizontal, 8mm) !important;
+    left: auto !important;
+}
+
+/* Even original pages: number on outside-left */
+.sheet .page.page-even::after {
+    left: var(--page-margin-horizontal, 8mm) !important;
+    right: auto !important;
+}
+
+/* Cover page: no page number */
+.sheet .page.cover-page::after {
+    display: none !important;
+}
+
+/* Blank page placeholder */
+.blank-page {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+}
+
+/* Sheet label (screen only) — shows "Sheet 1 Front", etc. */
+.sheet-label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font: 600 10px -apple-system, system-ui, sans-serif;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Screen preview styles */
+@media screen {
+    body {
+        background: #e0e0e0 !important;
+    }
+
+    .content {
+        padding-top: 24px;
+    }
+
+    .sheet {
+        margin: 24px auto 8px;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    /* Print instructions banner */
+    .booklet-instructions {
+        max-width: 600px;
+        margin: 0 auto 16px;
+        padding: 10px 16px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font: 11px/1.5 -apple-system, system-ui, sans-serif;
+        color: #555;
+    }
+
+    .booklet-instructions strong {
+        color: #1a1a1a;
+    }
+
+    .booklet-instructions ol {
+        margin: 4px 0;
+        padding-left: 18px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: none !important;
+    }
+
+    .sheet {
+        page-break-after: always;
+    }
+
+    .sheet:last-child {
+        page-break-after: auto;
+    }
+
+    .sheet::after {
+        display: none;
+    }
+
+    .sheet-label,
+    .booklet-instructions {
+        display: none !important;
+    }
+}

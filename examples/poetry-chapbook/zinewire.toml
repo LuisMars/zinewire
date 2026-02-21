@@ -1,0 +1,16 @@
+[zine]
+title = "Small Hours"
+page-size = "a6"
+columns = 1
+
+[theme]
+font-heading = "Cormorant Garamond"
+font-body = "Cormorant Garamond"
+font-mono = "JetBrains Mono"
+color-accent = "#8b5cf6"
+color-border = "#c4b5fd"
+color-table-header-bg = "#1e1b4b"
+
+[margins]
+vertical = "12mm"
+horizontal = "10mm"

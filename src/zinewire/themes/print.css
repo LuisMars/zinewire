@@ -1,0 +1,580 @@
+/* zinewire - Print Layout (Paginated) */
+
+html, body {
+    overflow-x: hidden;
+}
+
+/* @page rule injected by template with literal values (can't use CSS vars) */
+
+body {
+    font-size: var(--font-size-body);
+    line-height: 1.45;
+    background: var(--color-bg-muted);
+}
+
+/* Page numbering */
+.page::after {
+    content: counter(page-number);
+    position: absolute;
+    bottom: 5mm;
+    font-family: var(--page-number-font, var(--font-heading));
+    font-size: var(--page-number-size, var(--font-size-small));
+    color: var(--page-number-color, var(--color-text-muted));
+    z-index: 100;
+}
+
+.page:nth-child(odd)::after {
+    right: var(--page-margin-horizontal);
+    left: auto;
+}
+
+.page:nth-child(even)::after {
+    left: var(--page-margin-horizontal);
+    right: auto;
+}
+
+@media screen and (min-width: 1120px) {
+    body {
+        padding: 2em;
+    }
+}
+
+@media screen {
+    .content {
+        margin: 0 auto;
+        column-count: 1;
+        counter-reset: page-number;
+    }
+
+    .page {
+        width: var(--page-width, 148mm);
+        height: var(--page-height, 210mm);
+        margin: 0 auto 2em auto;
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+        background: white;
+        border: 1px solid #ccc;
+        position: relative;
+        overflow: visible;
+        counter-increment: page-number;
+        box-sizing: border-box;
+    }
+}
+
+/* Booklet mode - desktop spread preview */
+@media screen and (min-width: 1120px) {
+    body.booklet-mode .content {
+        display: grid;
+        grid-template-columns: repeat(2, var(--page-width, 148mm));
+        justify-content: center;
+        gap: 2em 1em;
+    }
+
+    body.booklet-mode .page {
+        margin: 0;
+    }
+
+    body.booklet-mode .page:first-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
+    body.booklet-mode .page:nth-child(odd) {
+        padding-left: var(--page-margin-spine);
+        padding-right: var(--page-margin-horizontal);
+    }
+
+    body.booklet-mode .page:nth-child(even) {
+        padding-left: var(--page-margin-horizontal);
+        padding-right: var(--page-margin-spine);
+    }
+
+    body.booklet-mode .page:first-child {
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+    }
+
+    body.booklet-mode .page:last-child {
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+    }
+
+    body.booklet-mode .page.secondary-cover {
+        grid-column: 1 / -1;
+        justify-self: center;
+        margin-top: 2em;
+    }
+}
+
+@media print {
+    .content {
+        counter-reset: page-number;
+    }
+
+    .page {
+        page-break-before: always;
+        counter-increment: page-number;
+        position: relative;
+        height: var(--page-height, 210mm);
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .page:nth-child(odd) {
+        padding-left: var(--page-margin-spine);
+        padding-right: var(--page-margin-horizontal);
+    }
+
+    .page:nth-child(even) {
+        padding-left: var(--page-margin-horizontal);
+        padding-right: var(--page-margin-spine);
+    }
+
+    .page:first-child {
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+        page-break-before: avoid;
+    }
+
+    .page.cover-page {
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+    }
+
+    .page:last-child {
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+    }
+
+    .page::after {
+        bottom: 5mm;
+    }
+}
+
+/* Headings - print sizes */
+h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+}
+
+h1, h2, h3, h4, table, pre {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+h1 {
+    font-size: var(--font-size-h1);
+    letter-spacing: 1pt;
+}
+
+h2 {
+    font-size: var(--font-size-h2);
+    border-bottom: 1.5px solid var(--color-border);
+    letter-spacing: 0.8pt;
+}
+
+h3 {
+    font-size: var(--font-size-h3);
+    letter-spacing: 0.5pt;
+}
+
+h4 {
+    font-size: var(--font-size-h4);
+    letter-spacing: 0.3pt;
+}
+
+h4 + p {
+    page-break-before: avoid;
+}
+
+/* Paragraphs */
+p {
+    margin-block-start: 2mm;
+    margin-block-end: 2mm;
+    orphans: 3;
+    widows: 3;
+}
+
+/* Blockquotes - print overrides */
+blockquote {
+    margin-block-start: 2mm;
+    margin-block-end: 2mm;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding: 1.5mm 3mm;
+    border-left: 2px solid var(--color-border);
+    font-style: italic;
+    font-size: var(--font-size-small);
+    break-inside: avoid;
+}
+
+blockquote p { margin: 0; }
+blockquote p:first-child { font-style: italic; }
+
+blockquote p:last-child strong,
+blockquote strong {
+    display: block;
+    font-style: normal;
+    font-size: var(--font-size-tiny);
+    color: var(--color-text-muted);
+    margin-top: 0.5mm;
+}
+
+/* Lists */
+ol, ul {
+    padding-inline-start: 2.5mm;
+}
+
+/* Tables - print styles */
+table {
+    font-size: var(--font-size-tiny);
+    page-break-inside: avoid;
+}
+
+table + h1, table + h2, table + h3,
+table + h4, table + h5, table + h6 {
+    margin-top: 3mm;
+}
+
+/* Large text wrapper */
+.large-text table {
+    font-size: var(--font-size-h2);
+    font-family: var(--font-heading);
+}
+
+.large-text h3 {
+    font-size: var(--font-size-h2);
+}
+
+.large-text th:empty {
+    display: none;
+}
+
+/* Spacer */
+.spacer {
+    height: 5mm;
+}
+
+th, td {
+    padding: 0.2em 0.3em;
+}
+
+th {
+    background: var(--color-table-header-bg);
+    color: var(--color-table-header-text);
+}
+
+hr {
+    page-break-after: avoid;
+}
+
+code {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+pre {
+    font-size: var(--font-size-tiny);
+    page-break-inside: avoid;
+}
+
+h4 + p,
+h4 + p + p,
+h4 + p + p + p {
+    page-break-before: avoid;
+    page-break-inside: avoid;
+}
+
+@media print {
+    .preview-notice { display: none; }
+}
+
+/* ==================== */
+/* Column layouts (1-2) */
+/* ==================== */
+.single-column {
+    column-count: 1 !important;
+}
+
+.two-column {
+    column-count: 2 !important;
+    column-gap: 4mm;
+}
+
+@media screen {
+    .two-column { column-fill: balance; }
+}
+
+@media print {
+    .two-column { column-fill: balance; }
+}
+
+.two-column h1, .two-column h2, .two-column h3,
+.two-column h4, .two-column table, .two-column pre {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.column-break {
+    break-after: column;
+    -webkit-column-break-after: always;
+}
+
+.column-break-visible {
+    break-after: column;
+    -webkit-column-break-after: always;
+    border-top: 1px dashed #ccc;
+}
+
+@media print {
+    .column-break-visible { border: none; }
+}
+
+.full-width {
+    column-span: all;
+    -webkit-column-span: all;
+}
+
+.page-break-marker {
+    column-span: all;
+    -webkit-column-span: all;
+    border-top: 1px dashed #ccc;
+}
+
+.page-break-marker::before {
+    font-size: var(--font-size-tiny);
+}
+
+@media screen {
+    .page-break-marker::before {
+        content: "- - - Section Break - - -";
+    }
+}
+
+@media print {
+    .page-break-marker { border: none; }
+    .page-break-marker::before { display: none; }
+}
+
+table, pre, blockquote {
+    page-break-inside: avoid;
+}
+
+@media print {
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* =============================== */
+/* Column layouts (3-5) - Flexbox  */
+/* From style-qr.css lines 48-71  */
+/* =============================== */
+.three-column {
+    display: flex;
+    gap: 5mm;
+    height: 100%;
+}
+
+.four-column {
+    display: flex;
+    gap: 4mm;
+    height: 100%;
+}
+
+.five-column {
+    display: flex;
+    gap: 3mm;
+    height: 100%;
+}
+
+.three-column > .column,
+.four-column > .column,
+.five-column > .column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--column-justify, space-between);
+}
+
+/* Break avoidance for multi-column */
+.three-column h2, .three-column h3, .three-column h4,
+.three-column table, .three-column pre,
+.four-column h2, .four-column h3, .four-column h4,
+.four-column table, .four-column pre,
+.five-column h2, .five-column h3, .five-column h4,
+.five-column table, .five-column pre {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* ============================== */
+/* Compact mode (dense layout)    */
+/* From style-qr.css lines 142-158 */
+/* ============================== */
+.page.compact {
+    font-size: 8pt;
+}
+
+.page.compact table {
+    font-size: 8pt;
+}
+
+.page.compact th, .page.compact td {
+    padding: 0;
+}
+
+.page.compact h2 {
+    margin-top: 1.5mm;
+}
+
+.page.compact p {
+    font-size: 8pt;
+}
+
+/* File indicator (dev mode) */
+.file-indicator {
+    position: absolute;
+    top: 2mm;
+    right: 2mm;
+    font-size: var(--font-size-micro);
+    color: #999;
+    opacity: 0.5;
+    font-family: var(--font-mono);
+    z-index: 10;
+}
+
+@media print {
+    .file-indicator,
+    .page-fill-badge {
+        display: none !important;
+    }
+}
+
+/* Cover page */
+.page.cover-page {
+    padding: var(--page-margin-vertical) var(--page-margin-horizontal);
+    overflow: hidden;
+    background-size: calc(100% - 2 * var(--page-margin-horizontal));
+    background-position: center calc(100% - 1.5 * var(--page-margin-vertical));
+    background-repeat: no-repeat;
+}
+
+.page.cover-page .cover-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding-top: 5mm;
+    padding-left: 5mm;
+    padding-right: 5mm;
+    box-sizing: border-box;
+}
+
+.page.cover-page h1 {
+    text-align: center;
+    color: var(--color-text);
+    font-size: var(--font-size-cover-h1);
+    font-weight: 900;
+    letter-spacing: 0;
+    z-index: 10;
+    margin: 0;
+    border-bottom: none;
+}
+
+.page.cover-page h2 {
+    text-align: center;
+    color: var(--color-text);
+    font-size: var(--font-size-cover-h2);
+    font-weight: 900;
+    z-index: 10;
+    margin: 3mm 0 0 0;
+    border-bottom: none;
+}
+
+.page.cover-page::after {
+    display: none;
+}
+
+.page.cover-page .file-indicator {
+    display: none;
+}
+
+/* Index page */
+.index-entries {
+    columns: 2;
+    column-gap: 8mm;
+}
+
+.index-h1, .index-h2 {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    padding: 0.2em 0;
+}
+
+.index-h1 {
+    font-family: var(--font-heading);
+    font-weight: normal;
+    text-transform: uppercase;
+    margin-top: 0.4em;
+    border-bottom: 1px dotted var(--color-border);
+}
+
+.index-h2 {
+    padding-left: 1em;
+    font-size: var(--font-size-small);
+}
+
+.index-h1 a, .index-h2 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.index-h1 a:hover, .index-h2 a:hover {
+    text-decoration: underline;
+}
+
+.index-page::after {
+    display: none;
+}
+
+/* Mobile responsive scaling */
+@media screen and (max-width: 980px) {
+    body {
+        padding: 0 !important;
+        overflow-x: hidden;
+    }
+
+    .content,
+    body.booklet-mode .content {
+        display: block !important;
+        grid-template-columns: none !important;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .page,
+    .page:first-child,
+    body.booklet-mode .page,
+    body.booklet-mode .page:first-child,
+    body.booklet-mode .page:nth-child(odd),
+    body.booklet-mode .page:nth-child(even),
+    body.booklet-mode .page:last-child {
+        transform: scale(var(--page-scale, 1));
+        transform-origin: top left;
+        margin-bottom: calc(var(--page-height, 210mm) * -1 * (1 - var(--page-scale, 1))) !important;
+        margin-top: 0 !important;
+        margin-left: var(--page-offset, 0) !important;
+        margin-right: 0 !important;
+        grid-column: auto !important;
+        justify-self: auto !important;
+        padding: var(--page-margin-vertical) var(--page-margin-horizontal) !important;
+    }
+}

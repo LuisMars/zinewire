@@ -1,0 +1,16 @@
+[zine]
+title = "Broke but Hungry"
+page-size = "half-letter"
+columns = 2
+
+[theme]
+font-heading = "DM Sans"
+font-body = "DM Sans"
+color-accent = "#dc2626"
+color-border = "#991b1b"
+color-table-header-bg = "#7f1d1d"
+color-bg-muted = "#fef2f2"
+
+[margins]
+vertical = "8mm"
+horizontal = "6mm"

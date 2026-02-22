@@ -8,7 +8,7 @@ html, body {
 
 body {
     font-size: var(--font-size-body);
-    line-height: 1.45;
+    line-height: var(--line-height, 1.45);
 }
 
 @media screen {
@@ -19,7 +19,7 @@ body {
 .page::after {
     content: counter(page-number);
     position: absolute;
-    bottom: 5mm;
+    bottom: var(--page-number-bottom, 5mm);
     font-family: var(--page-number-font, var(--font-heading));
     font-size: var(--page-number-size, var(--font-size-small));
     color: var(--page-number-color, var(--color-text-muted));
@@ -145,7 +145,7 @@ body {
     }
 
     .page::after {
-        bottom: 5mm;
+        bottom: var(--page-number-bottom, 5mm);
     }
 }
 
@@ -162,23 +162,23 @@ h1, h2, h3, h4, table, pre {
 
 h1 {
     font-size: var(--font-size-h1);
-    letter-spacing: 1pt;
+    letter-spacing: var(--letter-spacing-h1, 1pt);
 }
 
 h2 {
     font-size: var(--font-size-h2);
     border-bottom: 1.5px solid var(--color-border);
-    letter-spacing: 0.8pt;
+    letter-spacing: var(--letter-spacing-h2, 0.8pt);
 }
 
 h3 {
     font-size: var(--font-size-h3);
-    letter-spacing: 0.5pt;
+    letter-spacing: var(--letter-spacing-h3, 0.5pt);
 }
 
 h4 {
     font-size: var(--font-size-h4);
-    letter-spacing: 0.3pt;
+    letter-spacing: var(--letter-spacing-h4, 0.3pt);
 }
 
 h4 + p {
@@ -187,8 +187,8 @@ h4 + p {
 
 /* Paragraphs */
 p {
-    margin-block-start: 2mm;
-    margin-block-end: 2mm;
+    margin-block-start: var(--paragraph-spacing, 2mm);
+    margin-block-end: var(--paragraph-spacing, 2mm);
     orphans: 3;
     widows: 3;
 }
@@ -254,7 +254,7 @@ table + h4, table + h5, table + h6 {
 }
 
 th, td {
-    padding: 0.2em 0.3em;
+    padding: var(--table-cell-padding, 0.2em 0.3em);
 }
 
 th {
@@ -304,7 +304,7 @@ h4 + p + p + p {
 
 .two-column {
     column-count: 2 !important;
-    column-gap: 4mm;
+    column-gap: var(--column-gap, 4mm);
 }
 
 @media screen {
@@ -380,19 +380,19 @@ table, pre, blockquote {
 /* =============================== */
 .three-column {
     display: flex;
-    gap: 5mm;
+    gap: var(--column-gap, 5mm);
     height: 100%;
 }
 
 .four-column {
     display: flex;
-    gap: 4mm;
+    gap: var(--column-gap, 4mm);
     height: 100%;
 }
 
 .five-column {
     display: flex;
-    gap: 3mm;
+    gap: var(--column-gap, 3mm);
     height: 100%;
 }
 

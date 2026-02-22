@@ -893,6 +893,20 @@ input[type="radio"] { accent-color: #1a1a1a; }
 }
 input[type="checkbox"] { accent-color: #1a1a1a; }
 
+/* Imposition description */
+.imp-desc {
+    margin-top: 6px; padding: 8px 10px;
+    background: #f0f0f0; border-radius: 4px;
+    font-size: 10px; line-height: 1.5; color: #555;
+    display: none;
+}
+.imp-desc.visible { display: block; }
+.imp-desc strong { color: #333; font-weight: 600; }
+.imp-desc ol {
+    margin: 4px 0 0 0; padding-left: 16px;
+}
+.imp-desc ol li { margin: 1px 0; }
+
 /* Font rows */
 .font-row { margin-bottom: 6px; }
 .font-custom {
@@ -1076,6 +1090,14 @@ function populate(c) {
         else if (c.booklet) imp.value = 'booklet';
         else imp.value = 'none';
     }
+    // Standalone number inputs (not inside .size-input, e.g. line_height)
+    f.querySelectorAll('input[type="number"][data-f]').forEach(function(inp) {
+        if (inp.closest('.size-input')) return; // handled below
+        var k = inp.dataset.f;
+        var val = c[k];
+        if (val !== undefined && val !== '') inp.value = val;
+        else inp.value = '';
+    });
     // Size inputs: parse "10mm" → number=10, unit="mm"
     f.querySelectorAll('.size-input').forEach(function(si) {
         var inp = si.querySelector('input[type="number"]');
@@ -1138,6 +1160,12 @@ function collect() {
         d.french_fold = imp.value === 'french_fold';
         d.micro_mini = imp.value === 'micro_mini';
     }
+    // Standalone number inputs (not inside .size-input)
+    f.querySelectorAll('input[type="number"][data-f]').forEach(function(inp) {
+        if (inp.closest('.size-input')) return;
+        var k = inp.dataset.f;
+        d[k] = inp.value || '';
+    });
     // Size inputs: combine number + unit → "10mm"
     f.querySelectorAll('.size-input').forEach(function(si) {
         var inp = si.querySelector('input[type="number"]');
@@ -1253,6 +1281,86 @@ document.querySelectorAll('.font-sel').forEach(function(sel) {
 // Custom font text inputs: trigger preview on typing
 document.querySelectorAll('.font-custom').forEach(function(inp) {
     inp.addEventListener('input', function() { debouncedPreview(); });
+});
+
+// Imposition descriptions with orientation-aware folding instructions
+function getImpDesc(impVal) {
+    if (impVal === 'none') return '';
+    // Get current page size info
+    var ps = cfg.page_size || 'a5';
+    var isLandscape = ps.endsWith('-landscape');
+    var orient = isLandscape ? 'landscape' : 'portrait';
+    // Sheet orientation is opposite of page: portrait pages → landscape sheet
+    var sheetOrient = isLandscape ? 'portrait' : 'landscape';
+    var flipEdge = isLandscape ? 'long' : 'short';
+
+    if (impVal === 'booklet') {
+        return '<strong>Saddle-stitch booklet</strong> &mdash; ' +
+            '2 ' + orient + ' pages side-by-side on each ' + sheetOrient + ' sheet.' +
+            '<ol>' +
+            '<li>Print on <strong>' + sheetOrient + '</strong> paper, double-sided (flip on ' + flipEdge + ' edge)</li>' +
+            '<li>Stack all sheets in order</li>' +
+            '<li>Fold the stack in half</li>' +
+            '<li>Staple twice along the fold (spine)</li>' +
+            '</ol>';
+    }
+    if (impVal === 'mini_zine') {
+        return '<strong>Mini zine</strong> &mdash; ' +
+            '8 pages from one ' + orient + ' sheet using one cut and a series of folds.' +
+            '<ol>' +
+            '<li>Print <strong>single-sided</strong> on ' + orient + ' paper</li>' +
+            '<li>Fold in half lengthwise (hot-dog fold)</li>' +
+            '<li>Unfold, then fold in half widthwise (hamburger fold)</li>' +
+            '<li>Fold in half widthwise again (into quarters)</li>' +
+            '<li>Open to hamburger fold. Cut along the center crease from the fold to the middle only</li>' +
+            '<li>Open flat, fold lengthwise again</li>' +
+            '<li>Push ends inward so the cut opens into a diamond, flatten into a booklet</li>' +
+            '</ol>';
+    }
+    if (impVal === 'trifold') {
+        return '<strong>Tri-fold brochure</strong> &mdash; ' +
+            '6 panels (3 per side) on one ' + orient + ' sheet.' +
+            '<ol>' +
+            '<li>Print <strong>double-sided</strong> on ' + orient + ' paper (flip on long edge)</li>' +
+            '<li>Fold the right third inward</li>' +
+            '<li>Fold the left third over the top</li>' +
+            '</ol>';
+    }
+    if (impVal === 'french_fold') {
+        return '<strong>French fold</strong> &mdash; ' +
+            '4 pages from one ' + orient + ' sheet, folded twice.' +
+            '<ol>' +
+            '<li>Print <strong>single-sided</strong> on ' + orient + ' paper</li>' +
+            '<li>Fold in half horizontally</li>' +
+            '<li>Fold in half again vertically</li>' +
+            '<li>The printed side faces inward; cover is on front</li>' +
+            '</ol>';
+    }
+    if (impVal === 'micro_mini') {
+        return '<strong>Micro-mini</strong> &mdash; ' +
+            '16 pages from one ' + orient + ' sheet (8 per side), same fold-and-cut as mini zine but double-sided.' +
+            '<ol>' +
+            '<li>Print <strong>double-sided</strong> on ' + orient + ' paper (flip on ' + flipEdge + ' edge)</li>' +
+            '<li>Follow the same fold-and-cut steps as a mini zine</li>' +
+            '<li>Result: a tiny 16-page booklet</li>' +
+            '</ol>';
+    }
+    return '';
+}
+
+function updateImpDesc() {
+    var imp = document.querySelector('[data-f="imposition"]');
+    var desc = document.getElementById('imp-desc');
+    if (!imp || !desc) return;
+    var html = getImpDesc(imp.value);
+    desc.innerHTML = html;
+    desc.classList.toggle('visible', html !== '');
+}
+updateImpDesc();
+document.querySelector('[data-f="imposition"]').addEventListener('change', updateImpDesc);
+// Also update when page size or orientation changes
+document.querySelectorAll('select[name="page_size"], input[name="orientation"]').forEach(function(el) {
+    el.addEventListener('change', updateImpDesc);
 });
 
 var _impositionRoutes = {
@@ -1442,13 +1550,14 @@ def _config_page_html(config):
 <label><span>Imposition</span>
 <select data-f="imposition">
 <option value="none">None (single pages)</option>
-<option value="booklet">Booklet (saddle-stitch, 4pp/sheet)</option>
-<option value="mini_zine">Mini zine (fold &amp; cut, 8pp/sheet)</option>
-<option value="trifold">Tri-fold (letter fold, 6pp)</option>
-<option value="french_fold">French fold (4pp, fold twice)</option>
-<option value="micro_mini">Micro-mini (16pp double-sided)</option>
+<option value="booklet">Booklet (saddle-stitch)</option>
+<option value="mini_zine">Mini zine (8pp, fold &amp; cut)</option>
+<option value="trifold">Tri-fold (6 panels)</option>
+<option value="french_fold">French fold (4pp)</option>
+<option value="micro_mini">Micro-mini (16pp, double-sided)</option>
 </select>
 </label>
+<div class="imp-desc" id="imp-desc"></div>
 <label class="cb-label"><input type="checkbox" id="show-guides" checked> Show fold/cut guides</label>
 </fieldset>
 
@@ -1539,6 +1648,22 @@ def _config_page_html(config):
 <label><span>H2</span><div class="size-input"><input type="number" data-f="font_size_h2" step="0.5" placeholder="11"><select data-u="font_size_h2"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
 <label><span>H3</span><div class="size-input"><input type="number" data-f="font_size_h3" step="0.5" placeholder="10.5"><select data-u="font_size_h3"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
 <label><span>H4</span><div class="size-input"><input type="number" data-f="font_size_h4" step="0.5" placeholder="10"><select data-u="font_size_h4"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Cover H1</span><div class="size-input"><input type="number" data-f="font_size_cover_h1" step="1" placeholder="38"><select data-u="font_size_cover_h1"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Cover H2</span><div class="size-input"><input type="number" data-f="font_size_cover_h2" step="1" placeholder="24"><select data-u="font_size_cover_h2"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Small</span><div class="size-input"><input type="number" data-f="font_size_small" step="0.25" placeholder="9"><select data-u="font_size_small"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Tiny</span><div class="size-input"><input type="number" data-f="font_size_tiny" step="0.25" placeholder="7.75"><select data-u="font_size_tiny"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Typography</legend>
+<div class="size-grid">
+<label><span>Line height</span><input type="number" data-f="line_height" step="0.05" placeholder="1.45" style="width:100%"></label>
+<label><span>Para spacing</span><div class="size-input"><input type="number" data-f="paragraph_spacing" step="0.5" placeholder="2"><select data-u="paragraph_spacing"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>H1 spacing</span><div class="size-input"><input type="number" data-f="letter_spacing_h1" step="0.1" placeholder="1"><select data-u="letter_spacing_h1"><option>pt</option><option>px</option><option>em</option></select></div></label>
+<label><span>H2 spacing</span><div class="size-input"><input type="number" data-f="letter_spacing_h2" step="0.1" placeholder="0.8"><select data-u="letter_spacing_h2"><option>pt</option><option>px</option><option>em</option></select></div></label>
+<label><span>H3 spacing</span><div class="size-input"><input type="number" data-f="letter_spacing_h3" step="0.1" placeholder="0.5"><select data-u="letter_spacing_h3"><option>pt</option><option>px</option><option>em</option></select></div></label>
+<label><span>H4 spacing</span><div class="size-input"><input type="number" data-f="letter_spacing_h4" step="0.1" placeholder="0.3"><select data-u="letter_spacing_h4"><option>pt</option><option>px</option><option>em</option></select></div></label>
 </div>
 </fieldset>
 
@@ -1552,6 +1677,17 @@ def _config_page_html(config):
 <label><span>Tbl head</span><div class="color-pair"><input type="color" data-cp="color_table_header_bg"><input type="text" data-f="color_table_header_bg"></div></label>
 <label><span>Tbl text</span><div class="color-pair"><input type="color" data-cp="color_table_header_text"><input type="text" data-f="color_table_header_text"></div></label>
 <label><span>Accent</span><div class="color-pair"><input type="color" data-cp="color_accent"><input type="text" data-f="color_accent"></div></label>
+<label><span>Row alt</span><div class="color-pair"><input type="color" data-cp="color_row_alt"><input type="text" data-f="color_row_alt" placeholder="#f8f9fa"></div></label>
+<label><span>Row border</span><div class="color-pair"><input type="color" data-cp="color_row_border"><input type="text" data-f="color_row_border" placeholder="#e2e8f0"></div></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Margins</legend>
+<div class="size-grid">
+<label><span>Vertical</span><div class="size-input"><input type="number" data-f="margin_vertical" step="0.5" placeholder="10"><select data-u="margin_vertical"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>Horizontal</span><div class="size-input"><input type="number" data-f="margin_horizontal" step="0.5" placeholder="8"><select data-u="margin_horizontal"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>Spine</span><div class="size-input"><input type="number" data-f="margin_spine" step="0.5" placeholder="12"><select data-u="margin_spine"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
 </div>
 </fieldset>
 
@@ -1560,6 +1696,7 @@ def _config_page_html(config):
 <div class="size-grid">
 <label><span>Color</span><div class="color-pair"><input type="color" data-cp="page_number_color"><input type="text" data-f="page_number_color" placeholder="#666"></div></label>
 <label><span>Size</span><div class="size-input"><input type="number" data-f="page_number_size" step="0.5" placeholder="9"><select data-u="page_number_size"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Position</span><div class="size-input"><input type="number" data-f="page_number_position" step="0.5" placeholder="5"><select data-u="page_number_position"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
 </div>
 <div class="font-row">
 <label><span>Font</span><select class="font-sel" data-f="page_number_font">
@@ -1597,15 +1734,6 @@ def _config_page_html(config):
 </fieldset>
 
 <fieldset>
-<legend>Margins</legend>
-<div class="size-grid">
-<label><span>Vertical</span><div class="size-input"><input type="number" data-f="margin_vertical" step="0.5" placeholder="10"><select data-u="margin_vertical"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
-<label><span>Horizontal</span><div class="size-input"><input type="number" data-f="margin_horizontal" step="0.5" placeholder="8"><select data-u="margin_horizontal"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
-<label><span>Spine</span><div class="size-input"><input type="number" data-f="margin_spine" step="0.5" placeholder="12"><select data-u="margin_spine"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
-</div>
-</fieldset>
-
-<fieldset>
 <legend>Layout</legend>
 <label><span>Column justify</span><select data-f="column_justify">
 <option value="">Default (space-between)</option>
@@ -1616,6 +1744,8 @@ def _config_page_html(config):
 <option value="space-evenly">Space evenly</option>
 <option value="stretch">Stretch</option>
 </select></label>
+<label><span>Column gap</span><div class="size-input"><input type="number" data-f="column_gap" step="0.5" placeholder="4"><select data-u="column_gap"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>Table padding</span><input type="text" data-f="table_padding" placeholder="0.2em 0.3em"></label>
 <label><span>Custom CSS file</span><input type="text" data-f="custom_css" placeholder="style.css"></label>
 </fieldset>
 

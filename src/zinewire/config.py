@@ -66,8 +66,29 @@ class ZineConfig:
     page_number_size: str = ""
     page_number_font: str = ""
 
+    # Font sizes - cover & utility (empty = use defaults from base.css)
+    font_size_cover_h1: str = ""
+    font_size_cover_h2: str = ""
+    font_size_small: str = ""
+    font_size_tiny: str = ""
+
+    # Colors - table rows
+    color_row_alt: str = ""
+    color_row_border: str = ""
+
+    # Typography
+    line_height: str = ""
+    paragraph_spacing: str = ""
+    letter_spacing_h1: str = ""
+    letter_spacing_h2: str = ""
+    letter_spacing_h3: str = ""
+    letter_spacing_h4: str = ""
+
     # Layout
     column_justify: str = ""  # justify-content for 3-5 column layouts
+    column_gap: str = ""
+    table_padding: str = ""
+    page_number_position: str = ""
 
     # Page margins
     margin_vertical: str = "10mm"
@@ -249,7 +270,22 @@ _FIELD_TOML_MAP = {
     "page_number_color": ("theme", "page-number-color"),
     "page_number_size": ("theme", "page-number-size"),
     "page_number_font": ("theme", "page-number-font"),
+    "font_size_cover_h1": ("theme", "font-size-cover-h1"),
+    "font_size_cover_h2": ("theme", "font-size-cover-h2"),
+    "font_size_small": ("theme", "font-size-small"),
+    "font_size_tiny": ("theme", "font-size-tiny"),
+    "color_row_alt": ("theme", "color-row-alt"),
+    "color_row_border": ("theme", "color-row-border"),
+    "line_height": ("theme", "line-height"),
+    "paragraph_spacing": ("theme", "paragraph-spacing"),
+    "letter_spacing_h1": ("theme", "letter-spacing-h1"),
+    "letter_spacing_h2": ("theme", "letter-spacing-h2"),
+    "letter_spacing_h3": ("theme", "letter-spacing-h3"),
+    "letter_spacing_h4": ("theme", "letter-spacing-h4"),
     "column_justify": ("theme", "column-justify"),
+    "column_gap": ("theme", "column-gap"),
+    "table_padding": ("theme", "table-padding"),
+    "page_number_position": ("theme", "page-number-position"),
     "custom_css": ("theme", "custom-css"),
     "margin_vertical": ("margins", "vertical"),
     "margin_horizontal": ("margins", "horizontal"),
@@ -293,7 +329,22 @@ _TOML_LOAD_MAP = {
     "page-number-color": "page_number_color",
     "page-number-size": "page_number_size",
     "page-number-font": "page_number_font",
+    "font-size-cover-h1": "font_size_cover_h1",
+    "font-size-cover-h2": "font_size_cover_h2",
+    "font-size-small": "font_size_small",
+    "font-size-tiny": "font_size_tiny",
+    "color-row-alt": "color_row_alt",
+    "color-row-border": "color_row_border",
+    "line-height": "line_height",
+    "paragraph-spacing": "paragraph_spacing",
+    "letter-spacing-h1": "letter_spacing_h1",
+    "letter-spacing-h2": "letter_spacing_h2",
+    "letter-spacing-h3": "letter_spacing_h3",
+    "letter-spacing-h4": "letter_spacing_h4",
     "column-justify": "column_justify",
+    "column-gap": "column_gap",
+    "table-padding": "table_padding",
+    "page-number-position": "page_number_position",
     "custom-css": "custom_css",
     # [margins] section
     "vertical": "margin_vertical",

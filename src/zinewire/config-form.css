@@ -1,0 +1,108 @@
+/* Shared config form styles — single source of truth.
+   Used by both server.py (dev server) and packages/web (web editor).
+   Scoped to #cf (the form element's ID). */
+
+/* Sections */
+#cf fieldset { border: none; padding: 10px 16px 8px; }
+#cf fieldset:first-of-type { padding-top: 16px; }
+#cf fieldset + fieldset { border-top: 1px solid #e8e8e8; }
+#cf legend {
+    font-size: 9px; text-transform: uppercase; letter-spacing: .08em;
+    color: #888; font-weight: 600; margin-bottom: 8px; padding: 0;
+    width: 100%;
+}
+
+/* Labels and inputs */
+#cf label { display: block; margin-bottom: 6px; }
+#cf label > span {
+    display: block; font-size: 11px; color: #666;
+    margin-bottom: 2px; font-weight: 500;
+}
+#cf input[type="text"], #cf select {
+    display: block; width: 100%; padding: 5px 8px;
+    background: #fff; border: 1px solid #d0d0d0; color: #1a1a1a;
+    border-radius: 4px; font-size: 12px; font-family: inherit;
+}
+#cf input[type="text"]:focus, #cf select:focus {
+    border-color: #666; outline: none;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.06);
+}
+
+/* Range */
+#cf .range-row { display: flex; align-items: center; gap: 6px; }
+#cf input[type="range"] { flex: 1; accent-color: #1a1a1a; height: 4px; }
+#cf output {
+    font-size: 12px; font-weight: 700; color: #1a1a1a;
+    min-width: 16px; text-align: right; font-variant-numeric: tabular-nums;
+}
+
+/* Colors */
+#cf .color-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+#cf .color-grid label { margin-bottom: 2px; }
+#cf .color-grid label > span { font-size: 10px; }
+#cf .color-pair {
+    display: flex; gap: 4px; align-items: stretch;
+}
+#cf .color-pair input[type="color"] {
+    width: 28px; min-width: 28px; height: 28px;
+    border: 1px solid #d0d0d0; border-radius: 4px;
+    cursor: pointer; background: none; padding: 1px; flex-shrink: 0;
+}
+#cf .color-pair input[type="color"]:hover { border-color: #888; }
+#cf .color-pair input[type="text"] {
+    flex: 1; min-width: 0; font-size: 10px; padding: 4px 5px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+/* Size grid */
+#cf .size-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+#cf .size-grid label { margin-bottom: 2px; }
+#cf .size-grid label > span { font-size: 10px; }
+#cf .size-grid input[type="text"] { font-size: 11px; padding: 4px 6px; }
+
+/* Size input: [number][unit] combo */
+#cf .size-input { display: flex; }
+#cf .size-input input[type="number"] {
+    flex: 1; min-width: 0; width: 0;
+    background: #fff; border: 1px solid #d0d0d0; color: #1a1a1a;
+    border-right: none; border-radius: 4px 0 0 4px;
+    padding: 3px 4px; font-size: 11px; font-family: inherit;
+    -moz-appearance: textfield;
+}
+#cf .size-input input[type="number"]::-webkit-inner-spin-button,
+#cf .size-input input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none; margin: 0;
+}
+#cf .size-input input[type="number"]:focus {
+    border-color: #666; outline: none;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.06);
+}
+#cf .size-input select {
+    width: auto; flex-shrink: 0;
+    border: 1px solid #d0d0d0; border-radius: 0 4px 4px 0;
+    padding: 3px 1px; font-size: 9px;
+    background: #f5f5f5; color: #666;
+    font-family: inherit; cursor: pointer;
+}
+
+/* Radio */
+#cf .radio-group { display: flex; gap: 10px; }
+#cf .radio-group label {
+    display: flex; align-items: center; gap: 3px;
+    margin-bottom: 0; cursor: pointer; font-size: 12px;
+    font-weight: 500; color: #333;
+}
+#cf input[type="radio"] { accent-color: #1a1a1a; }
+
+/* Checkbox */
+#cf .cb-label {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 12px; color: #333;
+}
+#cf input[type="checkbox"] { accent-color: #1a1a1a; }
+
+/* Font rows */
+#cf .font-row { margin-bottom: 6px; }
+#cf .font-custom {
+    margin-top: 4px; font-size: 12px;
+}

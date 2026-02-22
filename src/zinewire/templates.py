@@ -92,7 +92,10 @@ def _css_vars(config: ZineConfig) -> str:
         val = getattr(config, attr, "")
         if val:
             lines.append(f"        {var}: {val};")
-    return "    :root {\n" + "\n".join(lines) + "\n    }"
+    result = "    :root {\n" + "\n".join(lines) + "\n    }"
+    if not config.page_numbers:
+        result += "\n    .page::after { display: none !important; }"
+    return result
 
 
 def _page_size_rule(config: ZineConfig) -> str:

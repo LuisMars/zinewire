@@ -5,11 +5,24 @@ __pycache__/
 dist/
 build/
 
-# Hidden directories
+# Hidden directories (except .github)
 .*/
+!.github/
 
 # Dev server output
 _build/
+
+# Example build outputs
+examples/**/*.html
+
+# Node
+node_modules/
+package-lock.json
+
+# Generated / compiled
+packages/core/src/sources.js
+packages/vscode/out/
+packages/web/dist/
 
 # OS
 .DS_Store

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zinewire editor</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Loading screen -->
+  <div id="loading" class="loading">
+    <div class="loading-inner">
+      <h1 class="loading-title">zinewire</h1>
+      <div class="loading-bar"><div id="loading-progress" class="loading-progress"></div></div>
+      <div id="loading-status" class="loading-status">Initializing...</div>
+      <div class="loading-note">First load downloads ~20 MB Python runtime (cached after)</div>
+    </div>
+  </div>
+
+  <!-- App shell -->
+  <div id="app" class="app hidden">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="toolbar-brand">zinewire</span>
+        <div class="toolbar-modes">
+          <button class="mode-btn active" data-mode="print">print</button>
+          <button class="mode-btn" data-mode="manual">manual</button>
+          <button class="mode-btn" data-mode="landing">web</button>
+        </div>
+        <div id="sub-tabs" class="sub-tabs">
+          <button class="sub-tab active" data-sub="default">Default</button>
+          <button class="sub-tab" data-sub="singles">Singles</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <select id="sample-select" class="toolbar-select" title="Load a sample">
+          <option value="" disabled>samples...</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <div class="zoom-controls">
+          <label class="zoom-label">zoom</label>
+          <input type="range" id="zoom-slider" min="25" max="150" value="100" step="5">
+          <output id="zoom-output" class="zoom-output">100%</output>
+        </div>
+        <button id="btn-config" class="toolbar-btn" title="Toggle config panel">config</button>
+        <button id="btn-export" class="toolbar-btn" title="Download HTML + TOML + Markdown">export</button>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div class="main-area">
+      <!-- Editor pane -->
+      <div id="editor-pane" class="pane editor-pane"></div>
+
+      <!-- Draggable divider -->
+      <div id="divider" class="divider"></div>
+
+      <!-- Preview pane -->
+      <div id="preview-pane" class="pane preview-pane">
+        <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+
+      <!-- Config sidebar -->
+      <div id="config-panel" class="config-panel hidden">
+        <div class="config-header">
+          <span>Config</span>
+          <div class="config-header-actions">
+            <button id="btn-config-reset" class="config-reset-btn" title="Reset to defaults">reset</button>
+            <button id="btn-config-close" class="config-close">&times;</button>
+          </div>
+        </div>
+        <div id="config-form-container" class="config-form-container"></div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span id="status-text">Ready</span>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

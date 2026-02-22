@@ -400,6 +400,8 @@ table, pre, blockquote {
 .four-column > .column,
 .five-column > .column {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: var(--column-justify, space-between);

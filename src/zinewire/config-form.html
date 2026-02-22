@@ -1,0 +1,202 @@
+<form id="cf" onsubmit="return false">
+
+<fieldset>
+<legend>Document</legend>
+<label><span>Title</span><input type="text" data-f="title"></label>
+<label><span>Page size</span><select name="page_size">
+<!-- PAGE_SIZE_OPTIONS -->
+<option value="custom">Custom...</option>
+</select></label>
+<label id="custom-sz" style="display:none"><span>Custom (WxHmm)</span><input type="text" name="page_size_custom" placeholder="120x170mm"></label>
+<label><span>Orientation</span><div class="radio-group">
+<label><input type="radio" name="orientation" value="portrait" checked> Portrait</label>
+<label><input type="radio" name="orientation" value="landscape"> Landscape</label>
+</div></label>
+<label><span>Default columns</span><div class="range-row"><input type="range" name="default_columns" data-f="default_columns" min="1" max="5" step="1"><output name="col_out">2</output></div></label>
+<label><span>Version</span><input type="text" data-f="version" placeholder="e.g. v1.0"></label>
+</fieldset>
+
+<fieldset>
+<legend>Output</legend>
+<label><span>Imposition</span>
+<select data-f="imposition">
+<option value="none">None (single pages)</option>
+<option value="booklet">Booklet (saddle-stitch, 4pp/sheet)</option>
+<option value="mini_zine">Mini zine (fold &amp; cut, 8pp/sheet)</option>
+<option value="trifold">Tri-fold (letter fold, 6pp)</option>
+<option value="french_fold">French fold (4pp, fold twice)</option>
+<option value="micro_mini">Micro-mini (16pp double-sided)</option>
+</select>
+</label>
+<label class="cb-label"><input type="checkbox" id="show-guides" checked> Show fold/cut guides</label>
+</fieldset>
+
+<fieldset>
+<legend>Fonts</legend>
+<div class="font-row">
+<label><span>Heading</span><select class="font-sel" data-f="font_heading">
+<optgroup label="Display">
+<option>Montserrat</option>
+<option>Saira Condensed</option>
+<option>Oswald</option>
+<option>Bebas Neue</option>
+<option>Anton</option>
+<option>Archivo Black</option>
+<option>Barlow Condensed</option>
+</optgroup>
+<optgroup label="Sans-serif">
+<option>Raleway</option>
+<option>Poppins</option>
+<option>Inter</option>
+<option>Work Sans</option>
+<option>DM Sans</option>
+<option>Outfit</option>
+<option>Plus Jakarta Sans</option>
+<option>Rubik</option>
+<option>Nunito</option>
+</optgroup>
+<optgroup label="Serif">
+<option>Playfair Display</option>
+<option>Bitter</option>
+<option>Lora</option>
+</optgroup>
+<option value="__custom">Custom...</option>
+</select></label>
+<input type="text" class="font-custom" placeholder="Google Font name" style="display:none">
+</div>
+<div class="font-row">
+<label><span>Body</span><select class="font-sel" data-f="font_body">
+<optgroup label="Serif">
+<option>PT Serif</option>
+<option>Merriweather</option>
+<option>Lora</option>
+<option>Source Serif 4</option>
+<option>Crimson Text</option>
+<option>EB Garamond</option>
+<option>Libre Baskerville</option>
+<option>Cormorant Garamond</option>
+<option>Noto Serif</option>
+<option>Bitter</option>
+</optgroup>
+<optgroup label="Sans-serif">
+<option>Inter</option>
+<option>Open Sans</option>
+<option>Roboto</option>
+<option>Lato</option>
+<option>Work Sans</option>
+<option>DM Sans</option>
+<option>Nunito</option>
+<option>Source Sans 3</option>
+</optgroup>
+<option value="__custom">Custom...</option>
+</select></label>
+<input type="text" class="font-custom" placeholder="Google Font name" style="display:none">
+</div>
+<div class="font-row">
+<label><span>Mono</span><select class="font-sel" data-f="font_mono">
+<option>Ubuntu Mono</option>
+<option>JetBrains Mono</option>
+<option>Fira Code</option>
+<option>Source Code Pro</option>
+<option>IBM Plex Mono</option>
+<option>Roboto Mono</option>
+<option>Space Mono</option>
+<option>Inconsolata</option>
+<option>DM Mono</option>
+<option>Courier Prime</option>
+<option value="__custom">Custom...</option>
+</select></label>
+<input type="text" class="font-custom" placeholder="Google Font name" style="display:none">
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Font sizes</legend>
+<div class="size-grid">
+<label><span>Body</span><div class="size-input"><input type="number" data-f="font_size_body" step="0.25" placeholder="9.25"><select data-u="font_size_body"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>H1</span><div class="size-input"><input type="number" data-f="font_size_h1" step="0.5" placeholder="13"><select data-u="font_size_h1"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>H2</span><div class="size-input"><input type="number" data-f="font_size_h2" step="0.5" placeholder="11"><select data-u="font_size_h2"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>H3</span><div class="size-input"><input type="number" data-f="font_size_h3" step="0.5" placeholder="10.5"><select data-u="font_size_h3"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>H4</span><div class="size-input"><input type="number" data-f="font_size_h4" step="0.5" placeholder="10"><select data-u="font_size_h4"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Colors</legend>
+<div class="color-grid">
+<label><span>Text</span><div class="color-pair"><input type="color" data-cp="color_text"><input type="text" data-f="color_text"></div></label>
+<label><span>Border</span><div class="color-pair"><input type="color" data-cp="color_border"><input type="text" data-f="color_border"></div></label>
+<label><span>Bg</span><div class="color-pair"><input type="color" data-cp="color_bg_muted"><input type="text" data-f="color_bg_muted"></div></label>
+<label><span>Muted</span><div class="color-pair"><input type="color" data-cp="color_text_muted"><input type="text" data-f="color_text_muted"></div></label>
+<label><span>Tbl head</span><div class="color-pair"><input type="color" data-cp="color_table_header_bg"><input type="text" data-f="color_table_header_bg"></div></label>
+<label><span>Tbl text</span><div class="color-pair"><input type="color" data-cp="color_table_header_text"><input type="text" data-f="color_table_header_text"></div></label>
+<label><span>Accent</span><div class="color-pair"><input type="color" data-cp="color_accent"><input type="text" data-f="color_accent"></div></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Page numbers</legend>
+<label class="checkbox-row"><input type="checkbox" data-f="page_numbers" checked><span>Show page numbers</span></label>
+<div class="size-grid">
+<label><span>Color</span><div class="color-pair"><input type="color" data-cp="page_number_color"><input type="text" data-f="page_number_color" placeholder="#666"></div></label>
+<label><span>Size</span><div class="size-input"><input type="number" data-f="page_number_size" step="0.5" placeholder="9"><select data-u="page_number_size"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+</div>
+<div class="font-row">
+<label><span>Font</span><select class="font-sel" data-f="page_number_font">
+<option value="">(heading font)</option>
+<optgroup label="Display">
+<option>Montserrat</option>
+<option>Saira Condensed</option>
+<option>Oswald</option>
+<option>Bebas Neue</option>
+<option>Anton</option>
+</optgroup>
+<optgroup label="Sans-serif">
+<option>Inter</option>
+<option>Poppins</option>
+<option>Work Sans</option>
+<option>DM Sans</option>
+<option>Outfit</option>
+<option>Rubik</option>
+</optgroup>
+<optgroup label="Serif">
+<option>Playfair Display</option>
+<option>Lora</option>
+<option>Bitter</option>
+</optgroup>
+<optgroup label="Mono">
+<option>JetBrains Mono</option>
+<option>Fira Code</option>
+<option>Source Code Pro</option>
+<option>IBM Plex Mono</option>
+</optgroup>
+<option value="__custom">Custom...</option>
+</select></label>
+<input type="text" class="font-custom" placeholder="Google Font name" style="display:none">
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Margins</legend>
+<div class="size-grid">
+<label><span>Vertical</span><div class="size-input"><input type="number" data-f="margin_vertical" step="0.5" placeholder="10"><select data-u="margin_vertical"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>Horizontal</span><div class="size-input"><input type="number" data-f="margin_horizontal" step="0.5" placeholder="8"><select data-u="margin_horizontal"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+<label><span>Spine</span><div class="size-input"><input type="number" data-f="margin_spine" step="0.5" placeholder="12"><select data-u="margin_spine"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Layout</legend>
+<label><span>Column justify</span><select data-f="column_justify">
+<option value="">Default (space-between)</option>
+<option value="flex-start">Top (flex-start)</option>
+<option value="flex-end">Bottom (flex-end)</option>
+<option value="center">Center</option>
+<option value="space-around">Space around</option>
+<option value="space-evenly">Space evenly</option>
+<option value="stretch">Stretch</option>
+</select></label>
+<label><span>Custom CSS file</span><input type="text" data-f="custom_css" placeholder="style.css"></label>
+</fieldset>
+
+</form>

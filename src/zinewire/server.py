@@ -1699,6 +1699,7 @@ def _config_page_html(config):
 
 <fieldset>
 <legend>Page numbers</legend>
+<label class="checkbox-row"><input type="checkbox" data-f="page_numbers" checked><span>Show page numbers</span></label>
 <div class="size-grid">
 <label><span>Color</span><div class="color-pair"><input type="color" data-cp="page_number_color"><input type="text" data-f="page_number_color" placeholder="#666"></div></label>
 <label><span>Size</span><div class="size-input"><input type="number" data-f="page_number_size" step="0.5" placeholder="9"><select data-u="page_number_size"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>

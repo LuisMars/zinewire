@@ -62,6 +62,7 @@ class ZineConfig:
     color_accent: str = "#2563EB"
 
     # Page numbers (empty = use defaults)
+    page_numbers: bool = True
     page_number_color: str = ""
     page_number_size: str = ""
     page_number_font: str = ""
@@ -270,6 +271,7 @@ _FIELD_TOML_MAP = {
     "font_size_h2": ("theme", "font-size-h2"),
     "font_size_h3": ("theme", "font-size-h3"),
     "font_size_h4": ("theme", "font-size-h4"),
+    "page_numbers": ("theme", "page-numbers"),
     "page_number_color": ("theme", "page-number-color"),
     "page_number_size": ("theme", "page-number-size"),
     "page_number_font": ("theme", "page-number-font"),
@@ -332,6 +334,7 @@ _TOML_LOAD_MAP = {
     "font-size-h2": "font_size_h2",
     "font-size-h3": "font_size_h3",
     "font-size-h4": "font_size_h4",
+    "page-numbers": "page_numbers",
     "page-number-color": "page_number_color",
     "page-number-size": "page_number_size",
     "page-number-font": "page_number_font",

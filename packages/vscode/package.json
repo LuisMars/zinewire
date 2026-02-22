@@ -1,0 +1,76 @@
+{
+  "name": "zinewire-preview",
+  "displayName": "zinewire Preview",
+  "description": "Live preview for zinewire markdown zines",
+  "version": "0.1.0",
+  "publisher": "zinewire",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "workspaceContains:**/zinewire.toml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "zinewire.openPreview",
+        "title": "zinewire: Open Preview",
+        "icon": "$(open-preview)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "zinewire.openPreview",
+          "when": "resourceExtname == .toml || editorLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "zinewire.openPreview",
+          "when": "resourceExtname == .toml",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "zinewire",
+      "properties": {
+        "zinewire.previewMode": {
+          "type": "string",
+          "default": "print",
+          "enum": [
+            "print",
+            "manual",
+            "web"
+          ],
+          "enumItemLabels": [
+            "Print",
+            "Manual",
+            "Web"
+          ],
+          "description": "Default preview mode"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "prebuild": "node ../core/scripts/bundle-sources.cjs",
+    "compile": "tsc -p ./ && node scripts/copy-assets.cjs",
+    "watch": "tsc -watch -p ./",
+    "package": "npm run compile && vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {}
+}

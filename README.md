@@ -370,6 +370,32 @@ pip install -e .
 
 On some systems you may need `pip3` instead of `pip`, or use `python3 -m pip install -e .`.
 
+## Web editor
+
+A browser-based editor that runs zinewire entirely client-side via [Pyodide](https://pyodide.org/) (Python compiled to WebAssembly). No backend, no Python install required.
+
+See [packages/web/README.md](packages/web/README.md) for details.
+
+```bash
+cd packages/web
+npm install
+npm run dev
+# Open http://localhost:3000
+```
+
+## VSCode extension
+
+Live preview panel for markdown files. Uses the same Pyodide engine — no Python install required.
+
+See [packages/vscode/README.md](packages/vscode/README.md) for details.
+
+```bash
+cd packages/vscode
+npm install
+npm run compile
+# Press F5 in VSCode to launch Extension Development Host
+```
+
 ## Dependencies
 
 - [markdown](https://python-markdown.github.io/) — Markdown parsing

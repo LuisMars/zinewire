@@ -69,6 +69,7 @@ def _css_vars(config: ZineConfig) -> str:
         ("font_size_cover_h2", "--font-size-cover-h2"),
         ("font_size_small", "--font-size-small"),
         ("font_size_tiny", "--font-size-tiny"),
+        ("font_size_micro", "--font-size-micro"),
         ("color_row_alt", "--color-row-alt"),
         ("color_row_border", "--color-row-border"),
         ("line_height", "--line-height"),
@@ -84,6 +85,8 @@ def _css_vars(config: ZineConfig) -> str:
         ("column_justify", "--column-justify"),
         ("column_gap", "--column-gap"),
         ("table_padding", "--table-cell-padding"),
+        ("table_font_size", "--table-font-size"),
+        ("list_padding", "--list-padding"),
     ]
     for attr, var in _optional:
         val = getattr(config, attr, "")

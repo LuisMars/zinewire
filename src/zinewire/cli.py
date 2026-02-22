@@ -227,6 +227,9 @@ def _cmd_build(args):
     else:
         modes = ["print", "manual", "web"]
 
+    # Resolve base directory for relative paths (tables, custom CSS, VERSION)
+    base_dir = str(Path(config_path).parent) if config_path else None
+
     # Build each mode
     for mode in modes:
         mode_config = copy.copy(config)
@@ -250,7 +253,7 @@ def _cmd_build(args):
             output = f"{source_stem}-{mode}.html"
 
         try:
-            build(source, output=output, config=mode_config)
+            build(source, output=output, config=mode_config, base_dir=base_dir)
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
@@ -267,7 +270,7 @@ def _cmd_build(args):
             booklet_config.booklet = True
             output = f"{source_stem}-booklet.html"
             try:
-                build(source, output=output, config=booklet_config)
+                build(source, output=output, config=booklet_config, base_dir=base_dir)
             except Exception as e:
                 print(f"Error building booklet: {e}", file=sys.stderr)
 
@@ -277,7 +280,7 @@ def _cmd_build(args):
             mini_config.mini_zine = True
             output = f"{source_stem}-minizine.html"
             try:
-                build(source, output=output, config=mini_config)
+                build(source, output=output, config=mini_config, base_dir=base_dir)
             except Exception as e:
                 print(f"Error building mini zine: {e}", file=sys.stderr)
 
@@ -294,7 +297,7 @@ def _cmd_build(args):
                 setattr(imp_config, field, True)
                 output = f"{source_stem}-{suffix}.html"
                 try:
-                    build(source, output=output, config=imp_config)
+                    build(source, output=output, config=imp_config, base_dir=base_dir)
                 except Exception as e:
                     print(f"Error building {suffix}: {e}", file=sys.stderr)
 

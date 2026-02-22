@@ -268,6 +268,9 @@ class DevServer:
             self._dirty_modes = {"manual", "web"}
             self._imp_html.clear()
 
+        # Resolve base directory for relative paths (tables, custom CSS)
+        base_dir = str(Path(self.config_path).parent) if self.config_path else None
+
         try:
             source = str(self.source)
             if self.config.files and self.config_path:
@@ -279,7 +282,7 @@ class DevServer:
                 mode_config.dev_mode = True
                 stem = self.output_file.stem
                 out = self.output_dir / f"{stem}-{mode}.html"
-                html = do_build(source, output=str(out), config=mode_config)
+                html = do_build(source, output=str(out), config=mode_config, base_dir=base_dir)
                 self._mode_html[mode] = html
                 self._dirty_modes.discard(mode)
 
@@ -312,6 +315,7 @@ class DevServer:
         field = field_map.get(imposition_type)
         if not field:
             return None
+        base_dir = str(Path(self.config_path).parent) if self.config_path else None
         try:
             source = str(self.source)
             if self.config.files and self.config_path:
@@ -322,7 +326,7 @@ class DevServer:
             imp_config.dev_mode = True
             stem = self.output_file.stem
             out = self.output_dir / f"{stem}-{imposition_type}.html"
-            html = do_build(source, output=str(out), config=imp_config)
+            html = do_build(source, output=str(out), config=imp_config, base_dir=base_dir)
             self._imp_html[imposition_type] = html
             return html
         except Exception as e:
@@ -334,6 +338,7 @@ class DevServer:
             return self._imp_html["singles"]
         import copy
         from . import build as do_build
+        base_dir = str(Path(self.config_path).parent) if self.config_path else None
         try:
             source = str(self.source)
             if self.config.files and self.config_path:
@@ -360,7 +365,7 @@ class DevServer:
             s_config.micro_mini = False
             stem = self.output_file.stem
             out = self.output_dir / f"{stem}-singles.html"
-            html = do_build(source, output=str(out), config=s_config)
+            html = do_build(source, output=str(out), config=s_config, base_dir=base_dir)
             self._imp_html["singles"] = html
             return html
         except Exception as e:
@@ -1652,6 +1657,7 @@ def _config_page_html(config):
 <label><span>Cover H2</span><div class="size-input"><input type="number" data-f="font_size_cover_h2" step="1" placeholder="24"><select data-u="font_size_cover_h2"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
 <label><span>Small</span><div class="size-input"><input type="number" data-f="font_size_small" step="0.25" placeholder="9"><select data-u="font_size_small"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
 <label><span>Tiny</span><div class="size-input"><input type="number" data-f="font_size_tiny" step="0.25" placeholder="7.75"><select data-u="font_size_tiny"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
+<label><span>Micro</span><div class="size-input"><input type="number" data-f="font_size_micro" step="0.25" placeholder="7"><select data-u="font_size_micro"><option>pt</option><option>px</option><option>em</option><option>rem</option></select></div></label>
 </div>
 </fieldset>
 
@@ -1746,6 +1752,8 @@ def _config_page_html(config):
 </select></label>
 <label><span>Column gap</span><div class="size-input"><input type="number" data-f="column_gap" step="0.5" placeholder="4"><select data-u="column_gap"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
 <label><span>Table padding</span><input type="text" data-f="table_padding" placeholder="0.2em 0.3em"></label>
+<label><span>Table font size</span><div class="size-input"><input type="number" data-f="table_font_size" step="0.25" placeholder="tiny"><select data-u="table_font_size"><option>pt</option><option>mm</option><option>em</option></select></div></label>
+<label><span>List padding</span><div class="size-input"><input type="number" data-f="list_padding" step="0.5" placeholder="2.5"><select data-u="list_padding"><option>mm</option><option>cm</option><option>in</option><option>pt</option></select></div></label>
 <label><span>Custom CSS file</span><input type="text" data-f="custom_css" placeholder="style.css"></label>
 </fieldset>
 

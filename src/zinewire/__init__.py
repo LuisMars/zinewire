@@ -15,6 +15,7 @@ def build(
     output: str | None = None,
     config: ZineConfig | None = None,
     registry: DirectiveRegistry | None = None,
+    base_dir: str | Path | None = None,
 ) -> str:
     """Build HTML from a markdown file.
 
@@ -23,6 +24,8 @@ def build(
         output: Path for output HTML (default: same name with .html).
         config: Build configuration (default: sensible defaults).
         registry: Directive registry (default: all built-in directives).
+        base_dir: Directory to resolve relative paths from (e.g. /table JSON,
+                  custom CSS, VERSION file). Defaults to source file's parent.
 
     Returns:
         The generated HTML string.
@@ -48,6 +51,9 @@ def build(
     if registry is None:
         registry = build_default_registry()
 
+    # Resolve base directory for relative paths (tables, custom CSS, VERSION)
+    resolve_dir = Path(base_dir) if base_dir else source_path.parent
+
     # Extract title from markdown (explicit config title takes priority)
     title, md_text = extract_title(md_text, fallback=source_path.stem)
     if config.title == "Untitled Zine":
@@ -58,19 +64,19 @@ def build(
         md_text = md_text.replace("/version", config.version)
     else:
         # Try VERSION file next to source
-        version_file = source_path.parent / "VERSION"
+        version_file = resolve_dir / "VERSION"
         if version_file.exists():
             ver = version_file.read_text(encoding="utf-8").strip()
             md_text = md_text.replace("/version", ver)
 
     # Process /table directives (JSON → markdown tables)
     from .tables import process_tables
-    md_text = process_tables(md_text, base_dir=source_path.parent)
+    md_text = process_tables(md_text, base_dir=resolve_dir)
 
     # Load custom CSS if specified
     extra_css = ""
     if config.custom_css:
-        css_path = source_path.parent / config.custom_css
+        css_path = resolve_dir / config.custom_css
         if css_path.exists():
             extra_css = css_path.read_text(encoding="utf-8")
 

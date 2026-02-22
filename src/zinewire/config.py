@@ -71,6 +71,7 @@ class ZineConfig:
     font_size_cover_h2: str = ""
     font_size_small: str = ""
     font_size_tiny: str = ""
+    font_size_micro: str = ""
 
     # Colors - table rows
     color_row_alt: str = ""
@@ -88,6 +89,8 @@ class ZineConfig:
     column_justify: str = ""  # justify-content for 3-5 column layouts
     column_gap: str = ""
     table_padding: str = ""
+    table_font_size: str = ""
+    list_padding: str = ""
     page_number_position: str = ""
 
     # Page margins
@@ -274,6 +277,7 @@ _FIELD_TOML_MAP = {
     "font_size_cover_h2": ("theme", "font-size-cover-h2"),
     "font_size_small": ("theme", "font-size-small"),
     "font_size_tiny": ("theme", "font-size-tiny"),
+    "font_size_micro": ("theme", "font-size-micro"),
     "color_row_alt": ("theme", "color-row-alt"),
     "color_row_border": ("theme", "color-row-border"),
     "line_height": ("theme", "line-height"),
@@ -285,6 +289,8 @@ _FIELD_TOML_MAP = {
     "column_justify": ("theme", "column-justify"),
     "column_gap": ("theme", "column-gap"),
     "table_padding": ("theme", "table-padding"),
+    "table_font_size": ("theme", "table-font-size"),
+    "list_padding": ("theme", "list-padding"),
     "page_number_position": ("theme", "page-number-position"),
     "custom_css": ("theme", "custom-css"),
     "margin_vertical": ("margins", "vertical"),
@@ -333,6 +339,7 @@ _TOML_LOAD_MAP = {
     "font-size-cover-h2": "font_size_cover_h2",
     "font-size-small": "font_size_small",
     "font-size-tiny": "font_size_tiny",
+    "font-size-micro": "font_size_micro",
     "color-row-alt": "color_row_alt",
     "color-row-border": "color_row_border",
     "line-height": "line_height",
@@ -344,6 +351,8 @@ _TOML_LOAD_MAP = {
     "column-justify": "column_justify",
     "column-gap": "column_gap",
     "table-padding": "table_padding",
+    "table-font-size": "table_font_size",
+    "list-padding": "list_padding",
     "page-number-position": "page_number_position",
     "custom-css": "custom_css",
     # [margins] section

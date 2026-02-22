@@ -48,7 +48,6 @@ def test_build_reference_mode():
     config = ZineConfig(
         page_size="a4-landscape",
         default_columns=3,
-        compact=True,
     )
     with tempfile.TemporaryDirectory() as tmpdir:
         output = Path(tmpdir) / "ref.html"
@@ -63,17 +62,16 @@ def test_build_reference_mode():
 
         assert "<title>Quick Reference Sheet</title>" in content
         assert "three-column" in content
-        assert "compact" in content
         assert "297mm" in content  # A4 landscape width
 
 
-def test_build_landing_mode():
-    """Build a landing page."""
-    config = ZineConfig(mode="landing")
+def test_build_web_mode():
+    """Build a web page."""
+    config = ZineConfig(mode="web")
     with tempfile.TemporaryDirectory() as tmpdir:
-        output = Path(tmpdir) / "landing.html"
+        output = Path(tmpdir) / "web.html"
         html = build(
-            str(FIXTURES / "sample-landing.md"),
+            str(FIXTURES / "sample-web.md"),
             output=str(output),
             config=config,
         )
@@ -82,11 +80,11 @@ def test_build_landing_mode():
         content = output.read_text()
 
         assert "<title>My Project</title>" in content
-        assert "landing-content" in content
+        assert "web-content" in content
         # No paginated page divs
         assert '<div class="page">' not in content
-        # Landing CSS present
-        assert "--landing-" in content
+        # Web CSS present
+        assert "--web-" in content
 
 
 def test_build_default_output_path():

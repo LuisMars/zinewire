@@ -108,19 +108,6 @@ def test_mid_page_column_switch_to_three():
     assert result.count('<div class="column">') == 3
 
 
-def test_compact_mode():
-    config = ZineConfig(compact=True)
-    html = "<p>Content</p>"
-    result = paginate(html, config=config)
-    assert "compact" in result
-
-
-def test_compact_directive():
-    html = "<!--COMPACT--><p>Dense content</p>"
-    result = paginate(html)
-    assert "compact" in result
-
-
 def test_large_text_transform():
     html = "<!--LARGETEXT--><p>Big</p><!--NORMALTEXT-->"
     result = paginate(html)

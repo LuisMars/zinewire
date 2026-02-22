@@ -1,8 +1,7 @@
-"""Booklet imposition for saddle-stitch printing.
+"""Imposition layouts for zine printing.
 
-Rearranges paginated HTML pages onto landscape sheets in the correct
-order for saddle-stitch folding. Algorithm ported from heresy28's
-impose_booklet.py, adapted to use stdlib only (no BeautifulSoup).
+Rearranges paginated HTML pages onto sheets in the correct order
+for various folding and binding methods.
 """
 
 import re
@@ -252,3 +251,200 @@ def impose_mini_zine(html_body: str, config: ZineConfig | None = None) -> str:
     )
 
     return sheet_html
+
+
+# ---------------------------------------------------------------------------
+# Tri-fold (letter fold, 6 panels on 2 sides)
+# ---------------------------------------------------------------------------
+
+# Classic tri-fold / letter fold layout:
+#
+#   Front (printed side up):
+#   +----------+-----------+----------+
+#   |  (6)     |   (1)     |  (2)     |
+#   | back flap| front     | back     |
+#   +----------+-----------+----------+
+#
+#   Back (flip on long edge):
+#   +----------+-----------+----------+
+#   |  (3)     |   (4)     |  (5)     |
+#   | inside-L | inside-C  | inside-R |
+#   +----------+-----------+----------+
+#
+# The left panel on front (page 6) tucks inside, so it's slightly narrower.
+
+_TRIFOLD_LAYOUT = [
+    # Front: left, center, right
+    [(6, False), (1, False), (2, False)],
+    # Back: left, center, right
+    [(3, False), (4, False), (5, False)],
+]
+
+
+def impose_trifold(html_body: str, config: ZineConfig | None = None) -> str:
+    """Impose paginated HTML as a tri-fold (letter fold) layout.
+
+    Arranges 6 pages across 2 sides of one sheet (3 panels per side).
+    Front: back-flap | front-cover | back-cover
+    Back:  inside-left | inside-center | inside-right
+    """
+    pages = extract_pages(html_body)
+    if not pages:
+        return html_body
+
+    pages = pages[:6]
+
+    sides = []
+    for side_idx, (row, side_name) in enumerate(
+        zip(_TRIFOLD_LAYOUT, ["front", "back"])
+    ):
+        cells = []
+        for col_idx, (page_num, _rotated) in enumerate(row):
+            page_idx = page_num - 1
+            page_html = _get_page_html(pages, page_idx)
+            tuck = " trifold-tuck" if side_name == "front" and col_idx == 0 else ""
+            cells.append(
+                f'<div class="trifold-panel trifold-c{col_idx}{tuck}">'
+                f'{page_html}'
+                f'</div>'
+            )
+        label = f'<div class="trifold-label">{side_name.title()} side</div>'
+        sides.append(
+            f'<div class="trifold-sheet" data-side="{side_name}">\n'
+            f'    {label}\n'
+            + "\n".join(f"    {c}" for c in cells)
+            + "\n</div>"
+        )
+
+    return "\n\n".join(sides)
+
+
+# ---------------------------------------------------------------------------
+# French Fold (4 pages, fold in half then perpendicular)
+# ---------------------------------------------------------------------------
+
+# French fold layout on a single sheet:
+#
+#   Printed side (face up):
+#   +----------+----------+
+#   |  (4) ↕   |  (1)     |   ← fold horizontally first
+#   +----------+----------+
+#   |  (2)     |  (3) ↕   |   ← then fold vertically
+#   +----------+----------+
+#
+# ↕ = rotated 180°. After folding: page 1 is front, 2-3 inside, 4 back.
+
+_FRENCH_FOLD_LAYOUT = [
+    # Top row: left, right
+    [(4, True), (1, False)],
+    # Bottom row: left, right
+    [(2, False), (3, True)],
+]
+
+
+def impose_french_fold(html_body: str, config: ZineConfig | None = None) -> str:
+    """Impose paginated HTML as a French fold (4 pages on one sheet).
+
+    Arranges 4 pages in a 2×2 grid. Pages 4 and 3 are rotated 180°.
+    After printing: fold in half horizontally, then vertically.
+    """
+    pages = extract_pages(html_body)
+    if not pages:
+        return html_body
+
+    pages = pages[:4]
+
+    cells = []
+    for row_idx, row in enumerate(_FRENCH_FOLD_LAYOUT):
+        for col_idx, (page_num, rotated) in enumerate(row):
+            page_idx = page_num - 1
+            page_html = _get_page_html(pages, page_idx)
+            rotate_class = " frenchfold-rotated" if rotated else ""
+            cells.append(
+                f'<div class="frenchfold-cell frenchfold-r{row_idx} '
+                f'frenchfold-c{col_idx}{rotate_class}">'
+                f'{page_html}'
+                f'</div>'
+            )
+
+    sheet_html = (
+        '<div class="frenchfold-sheet">\n'
+        + "\n".join(cells)
+        + "\n</div>"
+    )
+
+    return sheet_html
+
+
+# ---------------------------------------------------------------------------
+# Micro-mini (16 pages on one double-sided sheet)
+# ---------------------------------------------------------------------------
+
+# Extends the mini-zine concept to 16 pages. Printed double-sided.
+#
+# Front:
+#   +------+------+------+------+
+#   |16 ↕  |  1   |  2   |15 ↕  |
+#   +------+------+------+------+
+#   | 13   |  4 ↕ |  3 ↕ | 14   |
+#   +------+------+------+------+
+#
+# Back:
+#   +------+------+------+------+
+#   |10 ↕  |  7   |  8   | 9 ↕  |
+#   +------+------+------+------+
+#   | 11   | 12 ↕ |11 ↕  | 10   |    (pages 10,11 appear twice — correction below)
+#   +------+------+------+------+
+#
+# Actually for 16pp, the back side mirrors the front with pages 5-12:
+
+_MICRO_MINI_FRONT = [
+    [(16, True), (1, False), (2, False), (15, True)],
+    [(13, False), (4, True), (3, True), (14, False)],
+]
+
+_MICRO_MINI_BACK = [
+    [(10, True), (7, False), (8, False), (9, True)],
+    [(5, False), (12, True), (11, True), (6, False)],
+]
+
+
+def impose_micro_mini(html_body: str, config: ZineConfig | None = None) -> str:
+    """Impose paginated HTML as a micro-mini zine (16pp on one sheet).
+
+    Arranges 16 pages in a 4×2 grid on each side of a double-sided sheet.
+    Extension of the mini-zine concept with two 8-panel grids.
+    """
+    pages = extract_pages(html_body)
+    if not pages:
+        return html_body
+
+    pages = pages[:16]
+
+    sheets = []
+    for layout, side_name in [
+        (_MICRO_MINI_FRONT, "front"),
+        (_MICRO_MINI_BACK, "back"),
+    ]:
+        cells = []
+        for row_idx, row in enumerate(layout):
+            for col_idx, (page_num, rotated) in enumerate(row):
+                page_idx = page_num - 1
+                page_html = _get_page_html(pages, page_idx)
+                rotate_class = " micro-rotated" if rotated else ""
+                cells.append(
+                    f'<div class="micro-cell micro-r{row_idx} '
+                    f'micro-c{col_idx}{rotate_class}">'
+                    f'{page_html}'
+                    f'</div>'
+                )
+
+        label = f'<div class="micro-label">{side_name.title()} side</div>'
+        sheets.append(
+            f'<div class="micro-sheet" data-side="{side_name}">\n'
+            f'    {label}\n'
+            + "\n".join(cells)
+            + "\n</div>"
+        )
+
+    return "\n\n".join(sheets)

@@ -279,16 +279,18 @@ def test_booklet_output_path_auto():
 
 
 def test_booklet_has_landscape_page_rule():
-    """Booklet HTML contains A4 landscape @page rule for A5 pages."""
+    """Booklet @page rule uses page_size as the sheet (A5 = 148mm × 210mm)."""
     with tempfile.TemporaryDirectory() as tmpdir:
         source = Path(tmpdir) / "test.md"
         source.write_text("# Test\n\nContent.\n")
         config = ZineConfig(booklet=True)
         html = build(str(source), config=config)
 
-        # A5 page width = 148mm, so landscape sheet = 296mm
-        assert "296.0mm" in html
+        # page_size=A5 IS the sheet for booklet
+        assert "148mm" in html
         assert "210mm" in html
+        # Reading page = width / 2 = 74mm × 210mm
+        assert "74.0mm" in html
 
 
 # ---------------------------------------------------------------------------
@@ -428,3 +430,497 @@ def test_mini_zine_output_path_auto():
 
         expected = Path(tmpdir) / "myzine-minizine.html"
         assert expected.exists()
+
+
+# ---------------------------------------------------------------------------
+# Accordion fold tests
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Tri-fold tests
+# ---------------------------------------------------------------------------
+
+
+def test_impose_trifold_basic():
+    """Trifold produces 2 sides with 3 panels each."""
+    from zinewire.imposition import impose_trifold
+
+    pages_html = ""
+    for i in range(6):
+        pages_html += f'<div class="page"><p>Page {i+1}</p></div>\n'
+
+    result = impose_trifold(pages_html)
+    assert result.count('class="trifold-sheet"') == 2
+    assert result.count("trifold-panel") == 6
+    assert 'data-side="front"' in result
+    assert 'data-side="back"' in result
+    assert "trifold-tuck" in result  # First panel on front is tuck flap
+
+
+def test_impose_trifold_pads_blanks():
+    """Trifold fills blanks for fewer than 6 pages."""
+    from zinewire.imposition import impose_trifold
+
+    pages_html = '<div class="page"><p>Only one</p></div>\n'
+    result = impose_trifold(pages_html)
+    assert "blank-page" in result
+
+
+def test_impose_trifold_empty():
+    """Empty input returns unchanged."""
+    from zinewire.imposition import impose_trifold
+
+    result = impose_trifold("<p>No pages</p>")
+    assert result == "<p>No pages</p>"
+
+
+def test_trifold_build_integration():
+    """End-to-end: markdown → trifold HTML."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text(
+            "# Trifold Test\n\n"
+            + "\n\n/pagebreak\n\n".join(f"Page {i+1}." for i in range(6))
+            + "\n"
+        )
+        output = Path(tmpdir) / "test-trifold.html"
+        config = ZineConfig(trifold=True)
+        html = build(str(source), output=str(output), config=config)
+
+        assert output.exists()
+        assert "trifold-sheet" in html
+        assert "trifold-panel" in html
+
+
+# ---------------------------------------------------------------------------
+# French fold tests
+# ---------------------------------------------------------------------------
+
+
+def test_impose_french_fold_basic():
+    """French fold produces 4 cells in a 2×2 grid."""
+    from zinewire.imposition import impose_french_fold
+
+    pages_html = ""
+    for i in range(4):
+        pages_html += f'<div class="page"><p>Page {i+1}</p></div>\n'
+
+    result = impose_french_fold(pages_html)
+    assert '<div class="frenchfold-sheet">' in result
+    assert result.count("frenchfold-cell") == 4
+    # Pages 4 and 3 should be rotated
+    assert "frenchfold-rotated" in result
+    assert "Page 1" in result
+    assert "Page 4" in result
+
+
+def test_impose_french_fold_pads_blanks():
+    """French fold fills blanks for fewer than 4 pages."""
+    from zinewire.imposition import impose_french_fold
+
+    pages_html = '<div class="page"><p>Only one</p></div>\n'
+    result = impose_french_fold(pages_html)
+    assert "blank-page" in result
+
+
+def test_impose_french_fold_empty():
+    """Empty input returns unchanged."""
+    from zinewire.imposition import impose_french_fold
+
+    result = impose_french_fold("<p>No pages</p>")
+    assert result == "<p>No pages</p>"
+
+
+def test_french_fold_build_integration():
+    """End-to-end: markdown → french fold HTML."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text(
+            "# French Fold\n\n"
+            + "\n\n/pagebreak\n\n".join(f"Page {i+1}." for i in range(4))
+            + "\n"
+        )
+        output = Path(tmpdir) / "test-frenchfold.html"
+        config = ZineConfig(french_fold=True)
+        html = build(str(source), output=str(output), config=config)
+
+        assert output.exists()
+        assert "frenchfold-sheet" in html
+        assert "frenchfold-cell" in html
+
+
+# ---------------------------------------------------------------------------
+# Micro-mini tests
+# ---------------------------------------------------------------------------
+
+
+def test_impose_micro_mini_basic():
+    """Micro-mini produces 2 sheets (front/back) with 8 cells each."""
+    from zinewire.imposition import impose_micro_mini
+
+    pages_html = ""
+    for i in range(16):
+        pages_html += f'<div class="page"><p>P{i+1}</p></div>\n'
+
+    result = impose_micro_mini(pages_html)
+    assert result.count('class="micro-sheet"') == 2
+    assert result.count("micro-cell") == 16
+    assert 'data-side="front"' in result
+    assert 'data-side="back"' in result
+    assert "micro-rotated" in result
+    assert "P1" in result
+    assert "P16" in result
+
+
+def test_impose_micro_mini_pads_blanks():
+    """Micro-mini fills blanks for fewer than 16 pages."""
+    from zinewire.imposition import impose_micro_mini
+
+    pages_html = ""
+    for i in range(4):
+        pages_html += f'<div class="page"><p>P{i+1}</p></div>\n'
+
+    result = impose_micro_mini(pages_html)
+    assert "blank-page" in result
+    assert result.count("micro-cell") == 16
+
+
+def test_impose_micro_mini_truncates():
+    """Micro-mini truncates beyond 16 pages."""
+    from zinewire.imposition import impose_micro_mini
+
+    pages_html = ""
+    for i in range(20):
+        pages_html += f'<div class="page"><p>P{i+1}</p></div>\n'
+
+    result = impose_micro_mini(pages_html)
+    assert "P16" in result
+    assert "P17" not in result
+
+
+def test_impose_micro_mini_empty():
+    """Empty input returns unchanged."""
+    from zinewire.imposition import impose_micro_mini
+
+    result = impose_micro_mini("<p>No pages</p>")
+    assert result == "<p>No pages</p>"
+
+
+def test_micro_mini_build_integration():
+    """End-to-end: markdown → micro-mini HTML."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text(
+            "# Micro Mini Test\n\n"
+            + "\n\n/pagebreak\n\n".join(f"Page {i+1}." for i in range(16))
+            + "\n"
+        )
+        output = Path(tmpdir) / "test-micromini.html"
+        config = ZineConfig(micro_mini=True)
+        html = build(str(source), output=str(output), config=config)
+
+        assert output.exists()
+        assert "micro-sheet" in html
+        assert "micro-cell" in html
+
+
+# ---------------------------------------------------------------------------
+# Singles size calculation tests
+# ---------------------------------------------------------------------------
+# page_size = the sheet you print on for ALL impositions.
+# Singles = reading page = sheet divided by imposition layout:
+#   booklet:     width/2 × height
+#   mini_zine:   width/4 × height/2
+#   micro_mini:  width/4 × height/2
+#   trifold:     width/3 × height
+#   french_fold: width/2 × height/2
+
+
+def _build_singles(config: ZineConfig, source_text: str = "# Test\n\nContent.\n"):
+    """Helper: build singles HTML (plain print at reading page size, no imposition)."""
+    import copy
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text(source_text)
+        s_config = copy.copy(config)
+        s_config.mode = "print"
+        # Calculate reading page BEFORE clearing imposition flags
+        has_imposition = (
+            config.booklet or config.mini_zine or config.trifold
+            or config.french_fold or config.micro_mini
+        )
+        if has_imposition:
+            rw, rh = config.reading_page_dimensions
+            rw_mm = float(rw.replace("mm", ""))
+            rh_mm = float(rh.replace("mm", ""))
+            s_config.page_size = f"{rw_mm}x{rh_mm}mm"
+        s_config.booklet = False
+        s_config.mini_zine = False
+        s_config.trifold = False
+        s_config.french_fold = False
+        s_config.micro_mini = False
+        output = Path(tmpdir) / "singles.html"
+        html = build(str(source), output=str(output), config=s_config)
+        return html
+
+
+def _extract_page_size_from_html(html: str) -> tuple[str, str]:
+    """Extract width and height from the @page { size: W H; } rule."""
+    import re
+    m = re.search(r"@page\s*\{\s*size:\s*([0-9.]+mm)\s+([0-9.]+mm)", html)
+    assert m, "No @page size rule found in HTML"
+    return (m.group(1), m.group(2))
+
+
+# --- reading_page_dimensions property ---
+
+def test_reading_page_booklet_a5():
+    """Booklet A5: reading page = 74.0×210.0mm."""
+    c = ZineConfig(booklet=True, page_size="a5")
+    assert c.reading_page_dimensions == ("74.0mm", "210.0mm")
+
+
+def test_reading_page_mini_zine_a4():
+    """Mini-zine A4: reading page = 52.5×148.5mm."""
+    c = ZineConfig(mini_zine=True, page_size="a4")
+    assert c.reading_page_dimensions == ("52.5mm", "148.5mm")
+
+
+def test_reading_page_trifold_a4_landscape():
+    """Trifold A4-landscape: reading page = 99.0×210.0mm."""
+    c = ZineConfig(trifold=True, page_size="a4-landscape")
+    assert c.reading_page_dimensions == ("99.0mm", "210.0mm")
+
+
+def test_reading_page_french_fold_a4():
+    """French fold A4: reading page = 105.0×148.5mm."""
+    c = ZineConfig(french_fold=True, page_size="a4")
+    assert c.reading_page_dimensions == ("105.0mm", "148.5mm")
+
+
+def test_reading_page_micro_mini_a4():
+    """Micro-mini A4: reading page = 52.5×148.5mm (same grid as mini-zine)."""
+    c = ZineConfig(micro_mini=True, page_size="a4")
+    assert c.reading_page_dimensions == ("52.5mm", "148.5mm")
+
+
+def test_reading_page_no_imposition():
+    """No imposition: reading page = page_size."""
+    c = ZineConfig(page_size="a5")
+    assert c.reading_page_dimensions == ("148mm", "210mm")
+
+
+# --- Booklet singles ---
+
+def test_booklet_singles_a5():
+    """Booklet A5 (148×210mm sheet) → singles at 74.0×210.0mm."""
+    config = ZineConfig(booklet=True, page_size="a5")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "74.0mm"
+    assert h == "210.0mm"
+
+
+def test_booklet_singles_a4():
+    """Booklet A4 (210×297mm sheet) → singles at 105.0×297.0mm."""
+    config = ZineConfig(booklet=True, page_size="a4")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "105.0mm"
+    assert h == "297.0mm"
+
+
+def test_booklet_singles_a4_landscape():
+    """Booklet A4-landscape (297×210mm sheet) → singles at 148.5×210.0mm."""
+    config = ZineConfig(booklet=True, page_size="a4-landscape")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "148.5mm"
+    assert h == "210.0mm"
+
+
+def test_booklet_singles_a5_landscape():
+    """Booklet A5-landscape (210×148mm sheet) → singles at 105.0×148.0mm."""
+    config = ZineConfig(booklet=True, page_size="a5-landscape")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "105.0mm"
+    assert h == "148.0mm"
+
+
+def test_booklet_singles_custom():
+    """Booklet custom 200×150mm sheet → singles at 100.0×150.0mm."""
+    config = ZineConfig(booklet=True, page_size="200x150mm")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "100.0mm"
+    assert h == "150.0mm"
+
+
+def test_booklet_singles_letter():
+    """Booklet letter (215.9×279.4mm sheet) → singles at 107.95×279.4mm."""
+    config = ZineConfig(booklet=True, page_size="letter")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "107.95mm"
+    assert h == "279.4mm"
+
+
+# --- Mini-zine singles (sheet/4 × sheet/2) ---
+
+def test_mini_zine_singles_a4():
+    """Mini-zine A4 sheet (210×297mm) → singles at 52.5×148.5mm."""
+    config = ZineConfig(mini_zine=True, page_size="a4")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "52.5mm"
+    assert h == "148.5mm"
+
+
+def test_mini_zine_singles_a4_landscape():
+    """Mini-zine A4-landscape sheet (297×210mm) → singles at 74.25×105.0mm."""
+    config = ZineConfig(mini_zine=True, page_size="a4-landscape")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "74.25mm"
+    assert h == "105.0mm"
+
+
+def test_mini_zine_singles_letter():
+    """Mini-zine letter sheet (215.9×279.4mm) → singles at 53.975×139.7mm."""
+    config = ZineConfig(mini_zine=True, page_size="letter")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "53.975mm"
+    assert h == "139.7mm"
+
+
+# --- Trifold singles (sheet/3 × sheet height) ---
+
+def test_trifold_singles_a4_landscape():
+    """Trifold A4-landscape sheet (297×210mm) → singles at 99.0×210.0mm."""
+    config = ZineConfig(trifold=True, page_size="a4-landscape")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "99.0mm"
+    assert h == "210.0mm"
+
+
+def test_trifold_singles_letter():
+    """Trifold letter sheet (215.9×279.4mm) → singles at ~71.9667×279.4mm."""
+    config = ZineConfig(trifold=True, page_size="letter")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    # 215.9 / 3 = 71.9667 (rounded to 4 decimals)
+    assert w == "71.9667mm"
+    assert h == "279.4mm"
+
+
+# --- French fold singles (sheet/2 × sheet/2) ---
+
+def test_french_fold_singles_a4():
+    """French fold A4 sheet (210×297mm) → singles at 105.0×148.5mm."""
+    config = ZineConfig(french_fold=True, page_size="a4")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "105.0mm"
+    assert h == "148.5mm"
+
+
+def test_french_fold_singles_a4_landscape():
+    """French fold A4-landscape (297×210mm) → singles at 148.5×105.0mm."""
+    config = ZineConfig(french_fold=True, page_size="a4-landscape")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "148.5mm"
+    assert h == "105.0mm"
+
+
+# --- Micro-mini singles (sheet/4 × sheet/2) ---
+
+def test_micro_mini_singles_a4():
+    """Micro-mini A4 sheet (210×297mm) → singles at 52.5×148.5mm."""
+    config = ZineConfig(micro_mini=True, page_size="a4")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "52.5mm"
+    assert h == "148.5mm"
+
+
+def test_micro_mini_singles_custom():
+    """Micro-mini custom 320×240mm sheet → singles at 80.0×120.0mm."""
+    config = ZineConfig(micro_mini=True, page_size="320x240mm")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "80.0mm"
+    assert h == "120.0mm"
+
+
+# --- @page and CSS var checks ---
+
+def test_booklet_page_rule_uses_sheet_size():
+    """Booklet @page rule uses page_size (the sheet), not reading page."""
+    config = ZineConfig(booklet=True, page_size="a4-landscape")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text("# Test\n\nContent.\n")
+        html = build(str(source), config=config)
+    # @page should have full sheet dimensions
+    assert "297mm" in html  # sheet width
+    assert "210mm" in html  # sheet height
+
+
+def test_booklet_css_var_uses_reading_page():
+    """Booklet --page-width CSS var is the reading page width, not sheet."""
+    config = ZineConfig(booklet=True, page_size="a4-landscape")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text("# Test\n\nContent.\n")
+        html = build(str(source), config=config)
+    # --page-width should be half the sheet width (297/2 = 148.5)
+    assert "--page-width: 148.5mm" in html
+
+
+def test_mini_zine_page_rule_uses_sheet_size():
+    """Mini-zine @page uses page_size (sheet), CSS vars use reading page."""
+    config = ZineConfig(mini_zine=True, page_size="a4")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text("# Test\n\nContent.\n")
+        html = build(str(source), config=config)
+    assert "--page-width: 52.5mm" in html
+    assert "--page-height: 148.5mm" in html
+
+
+def test_trifold_css_var_uses_reading_page():
+    """Trifold --page-width CSS var is width/3."""
+    config = ZineConfig(trifold=True, page_size="a4-landscape")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text("# Test\n\nContent.\n")
+        html = build(str(source), config=config)
+    assert "--page-width: 99.0mm" in html
+
+
+def test_french_fold_css_var_uses_reading_page():
+    """French fold CSS vars use reading page (width/2, height/2)."""
+    config = ZineConfig(french_fold=True, page_size="a4")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "test.md"
+        source.write_text("# Test\n\nContent.\n")
+        html = build(str(source), config=config)
+    assert "--page-width: 105.0mm" in html
+    assert "--page-height: 148.5mm" in html
+
+
+# --- No imposition ---
+
+def test_no_imposition_singles_unchanged():
+    """No imposition: page_size is used as-is."""
+    config = ZineConfig(page_size="a5")
+    html = _build_singles(config)
+    w, h = _extract_page_size_from_html(html)
+    assert w == "148mm"
+    assert h == "210mm"

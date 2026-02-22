@@ -1,0 +1,122 @@
+/* zinewire - French Fold Layout (4 pages, fold-in-half twice) */
+
+/* Single sheet, 2×2 grid. Pages 4 and 3 are rotated 180°.
+   After printing: fold in half horizontally, then vertically.
+   Result: page 1 = front cover, 2-3 = inside spread, 4 = back. */
+
+.frenchfold-sheet {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    width: var(--sheet-width);
+    height: var(--sheet-height);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Each cell holds one page */
+.frenchfold-cell {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Rotated cells (180°) */
+.frenchfold-cell.frenchfold-rotated {
+    transform: rotate(180deg);
+}
+
+/* Override page styling inside french fold */
+.frenchfold-sheet .page {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    padding: var(--page-margin-vertical, 10mm) var(--page-margin-horizontal, 8mm);
+    font-size: 8pt;
+    line-height: 1.4;
+}
+
+/* Scale down typography */
+.frenchfold-sheet h1 { font-size: 12pt; margin: 2mm 0; }
+.frenchfold-sheet h2 { font-size: 10pt; margin: 1.5mm 0; }
+.frenchfold-sheet h3 { font-size: 9pt; margin: 1mm 0; }
+.frenchfold-sheet p { margin: 1mm 0; }
+.frenchfold-sheet ul, .frenchfold-sheet ol { margin: 1mm 0; padding-left: 5mm; }
+.frenchfold-sheet li { margin: 0.3mm 0; }
+.frenchfold-sheet blockquote { margin: 1mm 2mm; padding-left: 2.5mm; }
+.frenchfold-sheet pre { font-size: 6pt; padding: 2mm; margin: 1mm 0; }
+.frenchfold-sheet code { font-size: 6pt; }
+.frenchfold-sheet table { font-size: 6pt; }
+
+/* Page numbers */
+.frenchfold-sheet .page::after {
+    font-size: 6pt;
+    bottom: 2mm;
+}
+.frenchfold-sheet .page.cover-page::after {
+    display: none;
+}
+
+/* Blank page placeholder */
+.frenchfold-sheet .blank-page {
+    width: 100%;
+    height: 100%;
+}
+
+/* Fold guides */
+.frenchfold-sheet::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border-top: 0.5px dashed #ccc;
+    pointer-events: none;
+    z-index: 1;
+}
+.frenchfold-sheet::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 100%;
+    border-left: 0.5px dashed #ccc;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Screen preview */
+@media screen {
+    body { background: #e0e0e0 !important; }
+
+    .frenchfold-sheet {
+        margin: 2em auto;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        position: relative;
+    }
+
+    .frenchfold-cell {
+        border: 0.5px dashed #eee;
+    }
+}
+
+/* Print */
+@media print {
+    body { background: none !important; }
+
+    .frenchfold-sheet::before,
+    .frenchfold-sheet::after { display: none; }
+    .frenchfold-cell { border: none; }
+}

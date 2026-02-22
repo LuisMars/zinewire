@@ -35,19 +35,43 @@ def _column_class(count: int) -> str:
 def _open_page(
     result: list,
     col_count: int,
-    compact: bool = False,
     page_classes: str = "page",
 ) -> None:
     """Append the opening tags for a new page + column container."""
     classes = page_classes
-    if compact:
-        classes += " compact"
     result.append(f'<div class="{classes}">\n<div class="{_column_class(col_count)}">\n')
 
 
 def _close_page(result: list) -> None:
     """Append the closing tags for a page (column div + page div)."""
     result.append("</div>\n</div>\n\n")
+
+
+def _wrap_sections(content: str) -> str:
+    """Wrap each h1/h2 section and its content in a <div> for flexbox justify.
+
+    Splits HTML content at h1/h2 boundaries and wraps each heading+content
+    group in a <div>. This enables CSS justify-content to distribute
+    sections vertically within flexbox columns.
+    """
+    sections = re.split(r"(<h[12][^>]*>.*?</h[12]>)", content)
+    blocks = []
+    current: list[str] = []
+
+    for section in sections:
+        if re.match(r"<h[12]", section):
+            if current:
+                blocks.append("".join(current))
+                current = []
+            current.append(section)
+        elif section.strip():
+            current.append(section)
+
+    if current:
+        blocks.append("".join(current))
+
+    wrapped = [f"<div>{block}</div>" for block in blocks if block.strip()]
+    return "\n".join(wrapped)
 
 
 def _flush_flexbox_columns(result: list, column_buffers: list[list[str]], expected_count: int = 0) -> None:
@@ -60,25 +84,24 @@ def _flush_flexbox_columns(result: list, column_buffers: list[list[str]], expect
     while expected_count and len(column_buffers) < expected_count:
         column_buffers.append([])
 
+    columns = []
     for buf in column_buffers:
         content = "".join(buf)
         if content.strip():
-            result.append(f'<div class="column">\n{content}\n</div>\n')
+            content = _wrap_sections(content)
+            columns.append(f'<div class="column">\n{content}\n</div>')
         else:
-            result.append('<div class="column"></div>\n')
+            columns.append('<div class="column"></div>')
+    result.append("\n\n".join(columns) + "\n")
 
 
 def paginate(html_body: str, config: ZineConfig | None = None) -> str:
     """Wrap HTML content in page divs based on marker comments.
 
-    State machine ported from html_builder.py:500-619,
-    unified with QR column logic from html_builder.py:1053-1138.
-
     Markers consumed (structural):
     - <!--COVERPAGE:image|size-->
     - <!--PAGEBREAK-->
     - <!--ONECOLUMN--> through <!--FIVECOLUMNS-->
-    - <!--COMPACT-->
 
     Markers transformed (post-processing):
     - <!--LARGETEXT-->     -> <div class="large-text">
@@ -100,7 +123,7 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
 
     # Split HTML by structural markers while keeping them
     parts = re.split(
-        r"(<!--(?:COVERPAGE:[^>]*|PAGEBREAK|ONECOLUMN|TWOCOLUMNS|THREECOLUMNS|FOURCOLUMNS|FIVECOLUMNS|COMPACT|COLUMNBREAK|COLUMNBREAKVISIBLE)-->)",
+        r"(<!--(?:COVERPAGE:[^>]*|PAGEBREAK|ONECOLUMN|TWOCOLUMNS|THREECOLUMNS|FOURCOLUMNS|FIVECOLUMNS|COLUMNBREAK|COLUMNBREAKVISIBLE)-->)",
         html_body,
     )
 
@@ -111,7 +134,6 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
     current_is_cover = False
     pending_content: list[str] = []
     page_count = 0
-    compact_mode = config.compact
 
     # For 3+ column flexbox mode: buffer content per column
     column_buffers: list[list[str]] = [[]]
@@ -121,7 +143,7 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
         """Open a page if not already open, flushing pending content."""
         nonlocal page_opened, in_flexbox_mode, column_buffers
         if not page_opened:
-            _open_page(result, current_col_count, compact=compact_mode)
+            _open_page(result, current_col_count)
             result.extend(pending_content)
             pending_content.clear()
             page_opened = True
@@ -131,7 +153,7 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
 
     def _close_current_page():
         """Close the current page, flushing flexbox columns if needed."""
-        nonlocal page_opened, current_is_cover, page_count, compact_mode
+        nonlocal page_opened, current_is_cover, page_count
         if page_opened:
             if in_flexbox_mode and column_buffers:
                 _flush_flexbox_columns(result, column_buffers, current_col_count)
@@ -140,7 +162,6 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
             page_count += 1
         page_opened = False
         current_is_cover = False
-        compact_mode = config.compact  # reset to config default
 
     for part in parts:
         # --- Cover page ---
@@ -154,8 +175,6 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
             classes = "page cover-page"
             if page_count > 0:
                 classes += " secondary-cover"
-            if compact_mode:
-                classes += " compact"
 
             if cover_image:
                 style_parts = [f"background-image: url({cover_image});"]
@@ -197,9 +216,11 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
             _ensure_page_open()
 
             if current_col_count != col_switch:
-                # Flush flexbox columns if leaving 3+ mode
+                # Flush flexbox columns if leaving 3+ mode (only if there's content)
                 if in_flexbox_mode and column_buffers:
-                    _flush_flexbox_columns(result, column_buffers, current_col_count)
+                    has_content = any("".join(buf).strip() for buf in column_buffers)
+                    if has_content:
+                        _flush_flexbox_columns(result, column_buffers, current_col_count)
 
                 # Close old column div, open new
                 result.append(
@@ -209,11 +230,6 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
                 current_col_count = col_switch
                 in_flexbox_mode = col_switch >= FLEXBOX_THRESHOLD
                 column_buffers = [[]]
-            continue
-
-        # --- Compact mode ---
-        if part == "<!--COMPACT-->":
-            compact_mode = True
             continue
 
         # --- Column break ---
@@ -240,7 +256,7 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
         content_stripped = re.sub(r"<!--FILE:[^>]+-->", "", part)
         if not page_opened:
             if content_stripped.strip():
-                _open_page(result, current_col_count, compact=compact_mode)
+                _open_page(result, current_col_count)
                 result.extend(pending_content)
                 pending_content.clear()
                 page_opened = True
@@ -292,10 +308,9 @@ def paginate(html_body: str, config: ZineConfig | None = None) -> str:
 
 
 def strip_markers(html_body: str) -> str:
-    """Remove all page/column markers for non-paginated modes (landing, manual).
+    """Remove all page/column markers for non-paginated modes (web, manual).
 
     Keeps text wrappers (large/normal/space) since those are content-level.
-    Port from html_builder.py:494-499.
     """
     # Apply text wrappers (same as paginate)
     html_body = html_body.replace("<!--LARGETEXT-->", '<div class="large-text">')

@@ -14,10 +14,7 @@ def _font_url(font_name: str) -> str:
 
 
 def _page_scaling_script(config: ZineConfig) -> str:
-    """JavaScript for mobile page scaling.
-
-    Ported from html_builder.py:766-786.
-    """
+    """JavaScript for mobile page scaling."""
     page_width_px = config.page_width_px
     return f"""<script>
     function updatePageScale() {{
@@ -89,9 +86,8 @@ def _page_size_rule(config: ZineConfig) -> str:
 def _page_fill_script() -> str:
     """JavaScript for dev-mode page fill detection badges.
 
-    Ported from heresy28's detectPageFill() — iterates child elements
-    to find actual content bottom, handles two-column layouts by
-    tracking left/right column fill separately.
+    Iterates child elements to find actual content bottom, handles
+    two-column layouts by tracking left/right column fill separately.
     """
     return """<script>
     function detectPageFill() {
@@ -213,10 +209,7 @@ def render_print(
     extra_css: str = "",
     extra_head: str = "",
 ) -> str:
-    """Render a complete print-mode HTML document.
-
-    Based on html_builder.py:939-962, stripped of app menu, OG tags, locale nav.
-    """
+    """Render a complete print-mode HTML document."""
     base_css = (THEMES_DIR / "base.css").read_text(encoding="utf-8")
     print_css = (THEMES_DIR / "print.css").read_text(encoding="utf-8")
 
@@ -263,18 +256,15 @@ def render_print(
 </html>"""
 
 
-def render_landing(
+def render_web(
     body_html: str,
     config: ZineConfig,
     extra_css: str = "",
     extra_head: str = "",
 ) -> str:
-    """Render a landing page HTML document.
-
-    Based on html_builder.py:1362-1387, stripped of app menu, OG tags.
-    """
+    """Render a web page HTML document."""
     base_css = (THEMES_DIR / "base.css").read_text(encoding="utf-8")
-    landing_css = (THEMES_DIR / "landing.css").read_text(encoding="utf-8")
+    web_css = (THEMES_DIR / "web.css").read_text(encoding="utf-8")
 
     css_vars = _css_vars(config)
 
@@ -290,14 +280,14 @@ def render_landing(
     <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
     <style>
 {base_css}
-{landing_css}
+{web_css}
 {css_vars}
 {extra_css}
     </style>
     {extra_head}
 </head>
 <body>
-    <div class="landing-content">
+    <div class="web-content">
 {body_html}
     </div>
 </body>
@@ -312,7 +302,6 @@ def render_manual(
 ) -> str:
     """Render a scrollable web manual with sidebar ToC.
 
-    Based on html_builder.py:922-962 manual mode path.
     Sidebar ToC generated from h1/h2/h3 headers in body HTML.
     Includes scroll spy JS for active section highlighting.
     """
@@ -372,14 +361,17 @@ def render_mini_zine(
 
     css_vars = _css_vars(config)
 
-    # Sheet is the parent paper size (e.g. A4 for A7 pages, letter for eighth-letter)
-    # Each cell = 1/4 width × 1/2 height of the parent sheet
-    page_width, page_height = config.page_dimensions
-    w_mm = float(page_width.replace("mm", ""))
-    h_mm = float(page_height.replace("mm", ""))
-    # The sheet is 4× page width landscape, 2× page height
-    sheet_width = f"{w_mm * 4}mm"
-    sheet_height = f"{h_mm * 2}mm"
+    # page_size = the sheet you print on. Reading page = width/4 × height/2.
+    sheet_width, sheet_height = config.page_dimensions
+    reading_w, reading_h = config.reading_page_dimensions
+    css_vars = css_vars.replace(
+        f"--page-width: {sheet_width};",
+        f"--page-width: {reading_w};",
+    )
+    css_vars = css_vars.replace(
+        f"--page-height: {sheet_height};",
+        f"--page-height: {reading_h};",
+    )
 
     sheet_vars = f"""    :root {{
         --sheet-width: {sheet_width};
@@ -417,6 +409,185 @@ def render_mini_zine(
 </html>"""
 
 
+def render_trifold(
+    body_html: str,
+    config: ZineConfig,
+    extra_css: str = "",
+    extra_head: str = "",
+) -> str:
+    """Render a tri-fold (letter fold) HTML document."""
+    base_css = (THEMES_DIR / "base.css").read_text(encoding="utf-8")
+    print_css = (THEMES_DIR / "print.css").read_text(encoding="utf-8")
+    trifold_css = (THEMES_DIR / "trifold.css").read_text(encoding="utf-8")
+
+    css_vars = _css_vars(config)
+
+    # page_size = the sheet you print on. Reading page = width/3 × height.
+    sheet_width, sheet_height = config.page_dimensions
+    reading_w, reading_h = config.reading_page_dimensions
+    css_vars = css_vars.replace(
+        f"--page-width: {sheet_width};",
+        f"--page-width: {reading_w};",
+    )
+
+    sheet_vars = f"""    :root {{
+        --sheet-width: {sheet_width};
+        --sheet-height: {sheet_height};
+    }}"""
+
+    page_rule = f"    @page {{ size: {sheet_width} {sheet_height}; margin: 0; }}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{config.title} (Tri-fold)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+    <style>
+{base_css}
+{print_css}
+{trifold_css}
+{css_vars}
+{sheet_vars}
+{page_rule}
+{extra_css}
+    </style>
+    {extra_head}
+</head>
+<body>
+    <div class="content">
+{body_html}
+    </div>
+</body>
+</html>"""
+
+
+def render_french_fold(
+    body_html: str,
+    config: ZineConfig,
+    extra_css: str = "",
+    extra_head: str = "",
+) -> str:
+    """Render a French fold (4pp on one sheet) HTML document."""
+    base_css = (THEMES_DIR / "base.css").read_text(encoding="utf-8")
+    print_css = (THEMES_DIR / "print.css").read_text(encoding="utf-8")
+    frenchfold_css = (THEMES_DIR / "frenchfold.css").read_text(encoding="utf-8")
+
+    css_vars = _css_vars(config)
+
+    # page_size = the sheet you print on. Reading page = width/2 × height/2.
+    sheet_width, sheet_height = config.page_dimensions
+    reading_w, reading_h = config.reading_page_dimensions
+    css_vars = css_vars.replace(
+        f"--page-width: {sheet_width};",
+        f"--page-width: {reading_w};",
+    )
+    css_vars = css_vars.replace(
+        f"--page-height: {sheet_height};",
+        f"--page-height: {reading_h};",
+    )
+
+    sheet_vars = f"""    :root {{
+        --sheet-width: {sheet_width};
+        --sheet-height: {sheet_height};
+    }}"""
+
+    page_rule = f"    @page {{ size: {sheet_width} {sheet_height}; margin: 0; }}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{config.title} (French Fold)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+    <style>
+{base_css}
+{print_css}
+{frenchfold_css}
+{css_vars}
+{sheet_vars}
+{page_rule}
+{extra_css}
+    </style>
+    {extra_head}
+</head>
+<body>
+    <div class="content">
+{body_html}
+    </div>
+</body>
+</html>"""
+
+
+def render_micro_mini(
+    body_html: str,
+    config: ZineConfig,
+    extra_css: str = "",
+    extra_head: str = "",
+) -> str:
+    """Render a micro-mini zine (16pp on one double-sided sheet)."""
+    base_css = (THEMES_DIR / "base.css").read_text(encoding="utf-8")
+    print_css = (THEMES_DIR / "print.css").read_text(encoding="utf-8")
+    micromini_css = (THEMES_DIR / "micromini.css").read_text(encoding="utf-8")
+
+    css_vars = _css_vars(config)
+
+    # page_size = the sheet you print on. Reading page = width/4 × height/2.
+    sheet_width, sheet_height = config.page_dimensions
+    reading_w, reading_h = config.reading_page_dimensions
+    css_vars = css_vars.replace(
+        f"--page-width: {sheet_width};",
+        f"--page-width: {reading_w};",
+    )
+    css_vars = css_vars.replace(
+        f"--page-height: {sheet_height};",
+        f"--page-height: {reading_h};",
+    )
+
+    sheet_vars = f"""    :root {{
+        --sheet-width: {sheet_width};
+        --sheet-height: {sheet_height};
+    }}"""
+
+    page_rule = f"    @page {{ size: {sheet_width} {sheet_height}; margin: 0; }}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{config.title} (Micro Mini)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+    <style>
+{base_css}
+{print_css}
+{micromini_css}
+{css_vars}
+{sheet_vars}
+{page_rule}
+{extra_css}
+    </style>
+    {extra_head}
+</head>
+<body>
+    <div class="content">
+{body_html}
+    </div>
+</body>
+</html>"""
+
+
 def render_booklet(
     body_html: str,
     config: ZineConfig,
@@ -434,11 +605,18 @@ def render_booklet(
 
     css_vars = _css_vars(config)
 
-    # Landscape @page: 2x page width
-    page_width, page_height = config.page_dimensions
-    w_mm = float(page_width.replace("mm", ""))
-    sheet_width = f"{w_mm * 2}mm"
-    page_rule = f"    @page {{ size: {sheet_width} {page_height}; margin: 0; }}"
+    # Booklet: page_size IS the sheet you print on.
+    # Reading page = half the width (two pages side by side, fold vertical).
+    # User controls fold direction via portrait/landscape orientation.
+    sheet_width, sheet_height = config.page_dimensions
+    sw_mm = float(sheet_width.replace("mm", ""))
+    reading_w = f"{sw_mm / 2}mm"
+    # Override --page-width inside :root block to reading page width
+    css_vars = css_vars.replace(
+        f"--page-width: {sheet_width};",
+        f"--page-width: {reading_w};",
+    )
+    page_rule = f"    @page {{ size: {sheet_width} {sheet_height}; margin: 0; }}"
 
     return f"""<!DOCTYPE html>
 <html lang="en">

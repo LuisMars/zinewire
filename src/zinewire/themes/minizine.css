@@ -37,8 +37,7 @@
     page-break-after: auto !important;
     break-before: auto !important;
     break-after: auto !important;
-    /* Tighter margins for mini format */
-    padding: 3mm !important;
+    padding: var(--page-margin-vertical, 10mm) var(--page-margin-horizontal, 8mm);
     font-size: 6pt;
     line-height: 1.3;
 }
@@ -57,13 +56,13 @@
 
 /* Page numbers: smaller for mini */
 .mini-sheet .page::after {
-    font-size: 5pt !important;
-    bottom: 1mm !important;
+    font-size: 5pt;
+    bottom: 1mm;
 }
 
 /* Cover page in mini: centered title */
 .mini-sheet .page.cover-page::after {
-    display: none !important;
+    display: none;
 }
 
 /* Blank page placeholder */

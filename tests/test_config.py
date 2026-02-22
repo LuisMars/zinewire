@@ -12,7 +12,6 @@ def test_default_config():
     assert config.page_size == "a5"
     assert config.default_columns == 2
     assert config.mode == "print"
-    assert config.compact is False
     assert config.files == []
 
 
@@ -39,7 +38,6 @@ title = "Test Zine"
 page-size = "a4-landscape"
 columns = 3
 mode = "manual"
-compact = true
 """
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".toml", delete=False
@@ -53,7 +51,6 @@ compact = true
     assert config.page_size == "a4-landscape"
     assert config.default_columns == 3
     assert config.mode == "manual"
-    assert config.compact is True
 
 
 def test_load_config_theme():

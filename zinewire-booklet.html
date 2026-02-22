@@ -1,3 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zinewire (Booklet)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=PT+Serif:wght@400;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+    <style>
+/* zinewire - Base Typography & Shared Styles */
+
+:root {
+    /* Fonts - overridden by template CSS vars */
+    --font-body: 'PT Serif', serif;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-mono: 'Ubuntu Mono', 'Liberation Mono', 'Courier New', monospace;
+
+    /* Table colors */
+    --color-table-header-bg: #000;
+    --color-table-header-text: #fff;
+
+    /* Page margins */
+    --page-margin-vertical: 10mm;
+    --page-margin-horizontal: 8mm;
+    --page-margin-spine: 12mm;
+
+    /* Font sizes (print defaults, override in mode stylesheets) */
+    --font-size-body: 9.25pt;
+    --font-size-small: 9pt;
+    --font-size-tiny: 7.75pt;
+    --font-size-micro: 7pt;
+    --font-size-h1: 13pt;
+    --font-size-h2: 11pt;
+    --font-size-h3: 10.5pt;
+    --font-size-h4: 10pt;
+    --font-size-cover-h1: 38pt;
+    --font-size-cover-h2: 24pt;
+
+    /* Functional colors */
+    --color-bg-dark: #1a1a1a;
+    --color-bg-light: #f5f5f0;
+    --color-text: #1a1a1a;
+    --color-text-muted: #666;
+    --color-text-inverse: #f5f5f0;
+    --color-border: #333;
+    --color-bg-muted: #f5f5f5;
+    --color-row-alt: #f8f9fa;
+    --color-row-hover: #e2e8f0;
+    --color-row-border: #e2e8f0;
+}
+
+/* Base typography */
+body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    color: var(--color-text);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: -0.03em;
+}
+
+h1 { font-weight: 800; }
+h2 { font-weight: 700; }
+h3 { font-weight: 700; }
+h4 { font-weight: 700; }
+
+/* Headings followed by tables - remove border and reduce spacing */
+h1:has(+ table),
+h2:has(+ table),
+h3:has(+ table),
+h4:has(+ table) {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0.3em;
+}
+
+strong, b { font-weight: 700; }
+em, i { font-style: italic; }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 0.95em;
+    border: none;
+}
+
+thead {
+    background: var(--color-table-header-bg);
+    color: var(--color-table-header-text);
+}
+
+th {
+    text-align: left;
+    font-family: var(--font-body);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+    padding: 0.6em 1em;
+    border: none;
+}
+
+td {
+    padding: 0.6em 1em;
+    border: none;
+    border-bottom: 1px solid var(--color-row-border);
+}
+
+/* Zebra striping */
+tbody tr:nth-child(even) { background: var(--color-row-alt); }
+tbody tr:nth-child(odd) { background: #fff; }
+
+/* Lists */
+ol, ul {
+    padding-inline-start: 2.5mm;
+    margin: 0.5em 0;
+}
+
+ul {
+    list-style-type: "\25B8 "; /* ▸ */
+}
+
+li {
+    margin: 0.25em 0;
+    line-height: 1.4;
+}
+
+li::marker {
+    color: var(--color-text);
+}
+
+li > ul, li > ol {
+    margin: 0.25em 0;
+}
+
+/* Horizontal rule */
+hr {
+    border: none;
+    border-top: 2px solid var(--color-border);
+}
+
+/* Code */
+code {
+    font-family: var(--font-mono);
+    font-weight: bold;
+}
+
+pre {
+    font-family: var(--font-mono);
+    overflow-x: auto;
+}
+
+/* Blockquotes */
+blockquote {
+    margin: 1em 0;
+    padding: 0.75em 1.25em;
+    border-left: 4px solid var(--color-text);
+    background: var(--color-row-alt);
+    color: var(--color-text);
+    font-style: italic;
+}
+
+blockquote p { margin: 0; }
+blockquote p + p { margin-top: 0.5em; }
+
 /* zinewire - Print Layout (Paginated) */
 
 html, body {
@@ -417,6 +591,30 @@ table, pre, blockquote {
     page-break-inside: avoid;
 }
 
+/* ============================== */
+/* Compact mode (dense layout)    */
+/* From style-qr.css lines 142-158 */
+/* ============================== */
+.page.compact {
+    font-size: 8pt;
+}
+
+.page.compact table {
+    font-size: 8pt;
+}
+
+.page.compact th, .page.compact td {
+    padding: 0;
+}
+
+.page.compact h2 {
+    margin-top: 1.5mm;
+}
+
+.page.compact p {
+    font-size: 8pt;
+}
+
 /* File indicator (dev mode) */
 .file-indicator {
     position: absolute;
@@ -557,3 +755,237 @@ table, pre, blockquote {
         padding: var(--page-margin-vertical) var(--page-margin-horizontal) !important;
     }
 }
+
+/* zinewire - Booklet Imposition Layout (Saddle-Stitch) */
+
+/* NOTE: @page rule is injected by the template with literal values.
+   CSS calc() and var() do NOT work inside @page in most browsers. */
+
+/* Hide preview-only elements */
+.preview-notice,
+.file-indicator,
+.page-fill-badge {
+    display: none !important;
+}
+
+/* Sheet container: one physical side of a landscape sheet */
+.sheet {
+    width: calc(2 * var(--page-width, 148mm));
+    height: var(--page-height, 210mm);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Left and right halves */
+.imposed-left,
+.imposed-right {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Override inner page styling */
+.sheet .page {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+    margin: 0;
+    position: relative;
+    box-sizing: border-box;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+}
+
+/* Left page: spine on right edge */
+.imposed-left .page {
+    padding-left: var(--page-margin-horizontal, 8mm) !important;
+    padding-right: var(--page-margin-spine, 12mm) !important;
+    padding-top: var(--page-margin-vertical, 10mm) !important;
+    padding-bottom: var(--page-margin-vertical, 10mm) !important;
+}
+
+/* Right page: spine on left edge */
+.imposed-right .page {
+    padding-left: var(--page-margin-spine, 12mm) !important;
+    padding-right: var(--page-margin-horizontal, 8mm) !important;
+    padding-top: var(--page-margin-vertical, 10mm) !important;
+    padding-bottom: var(--page-margin-vertical, 10mm) !important;
+}
+
+/* Spine line (screen preview only) */
+.sheet::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed #ddd;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Override page numbers with original number from data attribute */
+.sheet .page::after {
+    content: attr(data-page-number) !important;
+    display: block !important;
+    counter-increment: none !important;
+}
+
+/* Odd original pages: number on outside-right */
+.sheet .page.page-odd::after {
+    right: var(--page-margin-horizontal, 8mm) !important;
+    left: auto !important;
+}
+
+/* Even original pages: number on outside-left */
+.sheet .page.page-even::after {
+    left: var(--page-margin-horizontal, 8mm) !important;
+    right: auto !important;
+}
+
+/* Cover page: no page number */
+.sheet .page.cover-page::after {
+    display: none !important;
+}
+
+/* Blank page placeholder */
+.blank-page {
+    width: var(--page-width, 148mm);
+    height: var(--page-height, 210mm);
+}
+
+/* Sheet label (screen only) — shows "Sheet 1 Front", etc. */
+.sheet-label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font: 600 10px -apple-system, system-ui, sans-serif;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Screen preview styles */
+@media screen {
+    body {
+        background: #e0e0e0 !important;
+    }
+
+    .content {
+        padding-top: 24px;
+    }
+
+    .sheet {
+        margin: 24px auto 8px;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    /* Print instructions banner */
+    .booklet-instructions {
+        max-width: 600px;
+        margin: 0 auto 16px;
+        padding: 10px 16px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font: 11px/1.5 -apple-system, system-ui, sans-serif;
+        color: #555;
+    }
+
+    .booklet-instructions strong {
+        color: #1a1a1a;
+    }
+
+    .booklet-instructions ol {
+        margin: 4px 0;
+        padding-left: 18px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: none !important;
+    }
+
+    .sheet {
+        page-break-after: always;
+    }
+
+    .sheet:last-child {
+        page-break-after: auto;
+    }
+
+    .sheet::after {
+        display: none;
+    }
+
+    .sheet-label,
+    .booklet-instructions {
+        display: none !important;
+    }
+}
+
+    :root {
+        --page-width: 148mm;
+        --page-height: 210mm;
+        --font-heading: 'Montserrat', sans-serif;
+        --font-body: 'PT Serif', serif;
+        --font-mono: 'Ubuntu Mono', monospace;
+        --color-text: #1a1a1a;
+        --color-border: #333;
+        --color-bg-muted: #f5f5f5;
+        --color-text-muted: #666;
+        --color-table-header-bg: #000;
+        --color-table-header-text: #fff;
+        --color-accent: #2563EB;
+        --page-margin-vertical: 10mm;
+        --page-margin-horizontal: 8mm;
+        --page-margin-spine: 12mm;
+    }
+    @page { size: 296.0mm 210mm; margin: 0; }
+
+    </style>
+    
+</head>
+<body>
+    <div class="content">
+<div class="booklet-instructions"><strong>Saddle-stitch booklet &mdash; 1 physical sheet, printed double-sided</strong><ol><li>Print with <strong>landscape</strong> orientation</li><li>Enable <strong>double-sided / duplex</strong> printing</li><li>Select <strong>&ldquo;Flip on short edge&rdquo;</strong></li><li>Stack all sheets, fold in half, staple at spine</li></ol></div>
+
+<div class="sheet" data-sheet="1" data-side="front">
+    <div class="sheet-label">Sheet 1 &mdash; front</div>
+    <div class="imposed-left"><div class="blank-page"></div></div>
+    <div class="imposed-right"><div class="page page-odd" data-page-number="1">
+<div class="two-column">
+<p>[zine]<br /></br>
+title = "Urban Foraging Field Guide"<br /></br>
+files = ["cover.md", "basics.md", "plants.md", "reference.md"]</p>
+<p>[theme]<br /></br>
+font-heading = "Bitter"<br /></br>
+color-border = "#333333"<br /></br>
+color-text-muted = "#666666"<br /></br>
+color-table-header-bg = "#000000"<br /></br>
+color-table-header-text = "#ffffff"<br /></br>
+color-accent = "#2d6a4f"</p>
+<p>[output]<br /></br>
+booklet = true</p>
+</div>
+</div></div>
+</div>
+
+<div class="sheet" data-sheet="1" data-side="back">
+    <div class="sheet-label">Sheet 1 &mdash; back</div>
+    <div class="imposed-left"><div class="blank-page"></div></div>
+    <div class="imposed-right"><div class="blank-page"></div></div>
+</div>
+    </div>
+</body>
+</html>

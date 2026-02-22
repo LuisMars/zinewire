@@ -21,7 +21,7 @@ MARKERS = {
     "THREECOLUMNS": "<!--THREECOLUMNS-->",
     "FOURCOLUMNS": "<!--FOURCOLUMNS-->",
     "FIVECOLUMNS": "<!--FIVECOLUMNS-->",
-    "COMPACT": "<!--COMPACT-->",
+
     "LARGETEXT": "<!--LARGETEXT-->",
     "NORMALTEXT": "<!--NORMALTEXT-->",
     "SPACE": "<!--SPACE-->",
@@ -131,11 +131,6 @@ def build_default_registry() -> DirectiveRegistry:
         lambda m: f'\n{MARKERS["COLUMNBREAK"]}\n',
     )
 
-    # /compact
-    registry.register(
-        r"^/compact\s*$",
-        lambda m: f'\n{MARKERS["COMPACT"]}\n',
-    )
     # /large, /normal, /space
     registry.register(
         r"^/large\s*$",
@@ -150,7 +145,7 @@ def build_default_registry() -> DirectiveRegistry:
         lambda m: f'\n{MARKERS["SPACE"]}\n',
     )
 
-    # --- Section-wrapping directives (produce markdown="1" divs for landing mode) ---
+    # --- Section-wrapping directives (produce markdown="1" divs for web mode) ---
 
     # /hero [image] — wraps content until next ## heading or end of file
     registry.register(

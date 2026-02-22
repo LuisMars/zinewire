@@ -1,0 +1,118 @@
+/* zinewire - Tri-fold Layout (letter fold, 6 panels) */
+
+/* Each side has 3 panels. The left panel on the front is the
+   tuck flap (slightly narrower). Printed double-sided. */
+
+.trifold-sheet {
+    display: grid;
+    grid-template-columns: 0.97fr 1fr 1fr;
+    width: var(--sheet-width);
+    height: var(--sheet-height);
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Tuck panel is slightly narrower */
+.trifold-sheet .trifold-tuck {
+    /* Already handled by grid-template-columns ratio */
+}
+
+/* Each panel holds one page */
+.trifold-panel {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Side label (screen only) */
+.trifold-label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font: 600 10px -apple-system, system-ui, sans-serif;
+    color: #999;
+}
+
+/* Override page styling inside trifold */
+.trifold-sheet .page {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    padding: var(--page-margin-vertical, 10mm) var(--page-margin-horizontal, 8mm);
+    font-size: 7pt;
+    line-height: 1.35;
+}
+
+/* Scale down typography */
+.trifold-sheet h1 { font-size: 11pt; margin: 1.5mm 0; }
+.trifold-sheet h2 { font-size: 9pt; margin: 1mm 0; }
+.trifold-sheet h3 { font-size: 8pt; margin: 0.5mm 0; }
+.trifold-sheet p { margin: 0.5mm 0; }
+.trifold-sheet ul, .trifold-sheet ol { margin: 0.5mm 0; padding-left: 4mm; }
+.trifold-sheet li { margin: 0.2mm 0; }
+.trifold-sheet blockquote { margin: 0.5mm 1.5mm; padding-left: 2mm; }
+.trifold-sheet pre { font-size: 5.5pt; padding: 1.5mm; margin: 0.5mm 0; }
+.trifold-sheet code { font-size: 5.5pt; }
+.trifold-sheet table { font-size: 5.5pt; }
+
+/* Page numbers */
+.trifold-sheet .page::after {
+    font-size: 5.5pt;
+    bottom: 1.5mm;
+}
+.trifold-sheet .page.cover-page::after {
+    display: none;
+}
+
+/* Blank page placeholder */
+.trifold-sheet .blank-page {
+    width: 100%;
+    height: 100%;
+}
+
+/* Fold guides */
+.trifold-panel + .trifold-panel {
+    border-left: 0.5px dashed #ccc;
+}
+
+/* Screen preview */
+@media screen {
+    body { background: #e0e0e0 !important; }
+
+    .trifold-sheet {
+        margin: 2em auto;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .trifold-sheet + .trifold-sheet {
+        margin-top: 3em;
+    }
+}
+
+/* Print */
+@media print {
+    body { background: none !important; }
+
+    .trifold-label { display: none; }
+    .trifold-panel + .trifold-panel { border-left: none; }
+
+    .trifold-sheet {
+        page-break-after: always;
+    }
+    .trifold-sheet:last-child {
+        page-break-after: auto;
+    }
+}

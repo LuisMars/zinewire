@@ -30,7 +30,7 @@ zinewire produces three output formats from the same markdown source:
 |------|-------------|--------|
 | **print** | Paginated A5 pages with columns, covers, page numbers | `my-zine.html` |
 | **manual** | Responsive web manual, no pagination | `my-zine-manual.html` |
-| **landing** | Single-page site with hero, cards, grid sections | `my-zine-landing.html` |
+| **web** | Single-page site with hero, cards, grid sections | `my-zine-web.html` |
 
 ```bash
 # Build a specific mode
@@ -48,7 +48,7 @@ zinewire build my-zine.md
 |------|-------------|
 | `-o, --output` | Output HTML file path |
 | `-c, --config` | Path to `zinewire.toml` config file |
-| `--mode` | Build mode: `print`, `landing`, `manual` (default: all three) |
+| `--mode` | Build mode: `print`, `web`, `manual` (default: all three) |
 | `--page-size` | Page size preset or custom, e.g. `a5`, `letter`, `120x170mm` |
 | `--columns` | Default column count 1-5 (default: 2) |
 | `--compact` | Enable compact/dense layout |
@@ -108,7 +108,7 @@ Directives are lines starting with `/` that control layout and structure.
 | `/large` | Start large text section |
 | `/normal` | End large text, return to normal |
 
-#### Landing/manual mode
+#### Web/manual mode
 
 | Directive | Description |
 |-----------|-------------|
@@ -320,7 +320,7 @@ The config editor saves changes to `zinewire.toml` automatically.
 | `/spread` | Two-page spread preview |
 | `/mini` | Mini zine preview |
 | `/manual` | Web manual preview |
-| `/landing` | Landing page preview |
+| `/web` | Web page preview |
 
 ## Multi-file builds
 

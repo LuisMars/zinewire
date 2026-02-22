@@ -12,10 +12,7 @@ from .directives import DirectiveRegistry, build_default_registry
 
 
 def slugify(text, sep="-"):
-    """Convert text to URL-friendly slug.
-
-    Port from html_builder.py:18-27.
-    """
+    """Convert text to URL-friendly slug."""
     slug = text.lower()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"[\s_]+", sep, slug)
@@ -47,10 +44,7 @@ DEFAULT_EXTENSION_CONFIGS = {
 
 
 def extract_title(md_text: str, fallback: str = "Untitled") -> tuple[str, str]:
-    """Extract /title directive from markdown, return (title, cleaned_text).
-
-    Based on html_builder.py:396-411.
-    """
+    """Extract /title directive from markdown, return (title, cleaned_text)."""
     # Quoted form: /title "My Title"
     title_match = re.search(r'^/title\s+"([^"]+)"', md_text, re.MULTILINE)
     if title_match:

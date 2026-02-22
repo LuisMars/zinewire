@@ -38,8 +38,7 @@ class ZineConfig:
     version: str = ""
     page_size: str = "a5"
     default_columns: int = 2
-    mode: str = "print"  # "print", "landing", or "manual"
-    compact: bool = False
+    mode: str = "print"  # "print", "web", or "manual"
 
     # Theme - fonts
     font_heading: str = "Montserrat"
@@ -85,6 +84,9 @@ class ZineConfig:
     output_path: Optional[str] = None
     booklet: bool = False
     mini_zine: bool = False
+    trifold: bool = False
+    french_fold: bool = False
+    micro_mini: bool = False
 
     # Dev
     dev_mode: bool = False
@@ -106,6 +108,66 @@ class ZineConfig:
                 h += "mm"
             return (w, h)
         return PAGE_SIZES["a5"]
+
+    @property
+    def print_sheet(self) -> tuple[str, str]:
+        """Return the parent print sheet size (width, height) in mm strings.
+
+        For standard sizes, returns one size up (e.g. A5 → A4).
+        Orientation-aware: portrait pages → landscape sheet, landscape → portrait.
+        For custom sizes, doubles the page width.
+        """
+        # Parent sheets for portrait pages (landscape orientation: wider first)
+        _parent_sheets = {
+            "a7": (297, 210),       # A7 → A4 landscape
+            "a6": (297, 210),       # A6 → A4 landscape
+            "a5": (297, 210),       # A5 → A4 landscape
+            "a4": (420, 297),       # A4 → A3 landscape
+            "eighth-letter": (279.4, 215.9),  # → Letter landscape
+            "quarter-letter": (279.4, 215.9),
+            "half-letter": (279.4, 215.9),
+            "digest": (279.4, 215.9),
+            "letter": (431.8, 279.4),  # → Tabloid landscape
+        }
+        ps = self.page_size.lower()
+        is_landscape = ps.endswith("-landscape")
+        key = ps.replace("-landscape", "")
+        if key in _parent_sheets:
+            w, h = _parent_sheets[key]
+            if is_landscape:
+                # Landscape pages → portrait sheet (swap dimensions)
+                return (f"{h}mm", f"{w}mm")
+            return (f"{w}mm", f"{h}mm")
+        # Custom or unknown: double the page width
+        pw, ph = self.page_dimensions
+        pw_mm = float(pw.replace("mm", ""))
+        return (f"{pw_mm * 2}mm", ph)
+
+    @property
+    def reading_page_dimensions(self) -> tuple[str, str]:
+        """Return the reading page size for impositions.
+
+        page_size = the sheet you print on. The reading page is derived
+        from the sheet dimensions based on the imposition layout:
+          booklet:     width/2 × height      (2 pages side by side)
+          mini_zine:   width/4 × height/2    (2 rows × 4 cols)
+          micro_mini:  width/4 × height/2    (4×2 grid per side)
+          trifold:     width/3 × height      (3 panels per side)
+          french_fold: width/2 × height/2    (2×2 grid)
+          none:        page_size as-is
+        """
+        pw, ph = self.page_dimensions
+        pw_mm = float(pw.replace("mm", ""))
+        ph_mm = float(ph.replace("mm", ""))
+        if self.booklet:
+            return (f"{pw_mm / 2}mm", f"{ph_mm}mm")
+        elif self.mini_zine or self.micro_mini:
+            return (f"{pw_mm / 4}mm", f"{ph_mm / 2}mm")
+        elif self.trifold:
+            return (f"{round(pw_mm / 3, 4)}mm", f"{ph_mm}mm")
+        elif self.french_fold:
+            return (f"{pw_mm / 2}mm", f"{ph_mm / 2}mm")
+        return (pw, ph)
 
     @property
     def page_width_px(self) -> float:
@@ -167,7 +229,7 @@ _FIELD_TOML_MAP = {
     "page_size": ("zine", "page-size"),
     "default_columns": ("zine", "columns"),
     "mode": ("zine", "mode"),
-    "compact": ("zine", "compact"),
+
     "files": ("zine", "files"),
     "font_heading": ("theme", "font-heading"),
     "font_body": ("theme", "font-body"),
@@ -195,6 +257,9 @@ _FIELD_TOML_MAP = {
     "output_path": ("output", "path"),
     "booklet": ("output", "booklet"),
     "mini_zine": ("output", "mini-zine"),
+    "trifold": ("output", "trifold"),
+    "french_fold": ("output", "french-fold"),
+    "micro_mini": ("output", "micro-mini"),
     "dev_mode": ("dev", "dev"),
 }
 
@@ -207,7 +272,7 @@ _TOML_LOAD_MAP = {
     "page-size": "page_size",
     "columns": "default_columns",
     "mode": "mode",
-    "compact": "compact",
+
     "files": "files",
     # [theme] section
     "font-heading": "font_heading",
@@ -238,6 +303,9 @@ _TOML_LOAD_MAP = {
     "path": "output_path",
     "booklet": "booklet",
     "mini-zine": "mini_zine",
+    "trifold": "trifold",
+    "french-fold": "french_fold",
+    "micro-mini": "micro_mini",
     # [dev] section
     "dev": "dev_mode",
 }
@@ -254,7 +322,6 @@ def load_config(path: str | Path | None = None) -> ZineConfig:
         page-size = "a5"
         columns = 2
         mode = "print"
-        compact = false
         files = ["intro.md", "chapter1.md", "chapter2.md"]
 
         [theme]

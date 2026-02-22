@@ -1,0 +1,130 @@
+/* zinewire - Micro-mini Layout (16 pages on one double-sided sheet) */
+
+/* Two 4×2 grids (front and back), each like a mini-zine.
+   Printed double-sided, then folded and cut to make 16 pages. */
+
+.micro-sheet {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    width: var(--sheet-width);
+    height: var(--sheet-height);
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Each cell holds one page */
+.micro-cell {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Rotated cells (180°) */
+.micro-cell.micro-rotated {
+    transform: rotate(180deg);
+}
+
+/* Side label (screen only) */
+.micro-label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font: 600 10px -apple-system, system-ui, sans-serif;
+    color: #999;
+    z-index: 2;
+}
+
+/* Override page styling inside micro-mini */
+.micro-sheet .page {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    padding: var(--page-margin-vertical, 10mm) var(--page-margin-horizontal, 8mm);
+    font-size: 4.5pt;
+    line-height: 1.2;
+}
+
+/* Scale down typography aggressively */
+.micro-sheet h1 { font-size: 7pt; margin: 0.5mm 0; }
+.micro-sheet h2 { font-size: 6pt; margin: 0.5mm 0; }
+.micro-sheet h3 { font-size: 5.5pt; margin: 0.3mm 0; }
+.micro-sheet p { margin: 0.3mm 0; }
+.micro-sheet ul, .micro-sheet ol { margin: 0.3mm 0; padding-left: 2mm; }
+.micro-sheet li { margin: 0.1mm 0; }
+.micro-sheet blockquote { margin: 0.3mm 0.5mm; padding-left: 1mm; }
+.micro-sheet pre { font-size: 3.5pt; padding: 0.5mm; margin: 0.3mm 0; }
+.micro-sheet code { font-size: 3.5pt; }
+.micro-sheet table { font-size: 3.5pt; }
+
+/* Page numbers: tiny for micro */
+.micro-sheet .page::after {
+    font-size: 3.5pt;
+    bottom: 0.5mm;
+}
+.micro-sheet .page.cover-page::after {
+    display: none;
+}
+
+/* Blank page placeholder */
+.micro-sheet .blank-page {
+    width: 100%;
+    height: 100%;
+}
+
+/* Cut guide: dashed line across the center horizontal fold */
+.micro-sheet::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    width: 50%;
+    border-top: 0.5px dashed #ccc;
+    pointer-events: none;
+}
+
+/* Screen preview */
+@media screen {
+    body { background: #e0e0e0 !important; }
+
+    .micro-sheet {
+        margin: 2em auto;
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .micro-sheet + .micro-sheet {
+        margin-top: 3em;
+    }
+
+    .micro-cell {
+        border: 0.5px dashed #ddd;
+    }
+}
+
+/* Print */
+@media print {
+    body { background: none !important; }
+
+    .micro-label { display: none; }
+    .micro-cell { border: none; }
+
+    .micro-sheet {
+        page-break-after: always;
+    }
+    .micro-sheet:last-child {
+        page-break-after: auto;
+    }
+}

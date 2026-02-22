@@ -1,7 +1,6 @@
 /title "Quick Reference Sheet"
 
 /three-columns
-/compact
 
 ## Section A
 

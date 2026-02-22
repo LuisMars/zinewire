@@ -45,10 +45,10 @@ def test_toml_encode_empty_list():
 # ---------------------------------------------------------------------------
 
 def test_config_to_dict():
-    config = ZineConfig(title="Test", mode="landing")
+    config = ZineConfig(title="Test", mode="web")
     d = config.to_dict()
     assert d["title"] == "Test"
-    assert d["mode"] == "landing"
+    assert d["mode"] == "web"
     assert d["page_size"] == "a5"
     assert isinstance(d["files"], list)
 
@@ -74,7 +74,6 @@ def test_config_save_load_roundtrip():
         page_size="a4-landscape",
         default_columns=3,
         mode="manual",
-        compact=True,
         color_accent="#ff0000",
         margin_vertical="15mm",
     )
@@ -86,7 +85,6 @@ def test_config_save_load_roundtrip():
     assert loaded.page_size == "a4-landscape"
     assert loaded.default_columns == 3
     assert loaded.mode == "manual"
-    assert loaded.compact is True
     assert loaded.color_accent == "#ff0000"
     assert loaded.margin_vertical == "15mm"
 

@@ -1,8 +1,4 @@
-"""Manual mode: Table of Contents generation and scroll spy.
-
-Ported from html_builder.py:49-110 (ToC) and 706-755 (scroll spy).
-Game-specific booklet-title deduplication removed — just processes h1/h2/h3.
-"""
+"""Manual mode: Table of Contents generation and scroll spy."""
 
 import re
 
@@ -42,10 +38,7 @@ def generate_toc(html_body: str) -> str:
 
 
 def scrollspy_script() -> str:
-    """JavaScript for scroll spy and mobile sidebar toggle.
-
-    Ported from html_builder.py:706-755. 100% generic — no game-specific logic.
-    """
+    """JavaScript for scroll spy and mobile sidebar toggle."""
     return """<script>
     // Scroll spy: highlight current section in sidebar
     function updateActiveLink() {

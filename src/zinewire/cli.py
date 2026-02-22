@@ -37,7 +37,7 @@ def main():
     )
     build_parser.add_argument(
         "--mode",
-        choices=["print", "landing", "manual"],
+        choices=["print", "web", "manual"],
         help="Build only this mode (default: all three)",
     )
     build_parser.add_argument(
@@ -48,12 +48,6 @@ def main():
         "--columns",
         type=int,
         help="Default column count: 1-5 (default: 2)",
-    )
-    build_parser.add_argument(
-        "--compact",
-        action="store_true",
-        default=None,
-        help="Enable compact/dense layout",
     )
     build_parser.add_argument(
         "--title",
@@ -77,6 +71,24 @@ def main():
         default=None,
         help="Generate one-sheet fold-and-cut mini zine (8 pages on 1 sheet)",
     )
+    build_parser.add_argument(
+        "--trifold",
+        action="store_true",
+        default=None,
+        help="Generate tri-fold letter fold (6 panels on 2 sides)",
+    )
+    build_parser.add_argument(
+        "--french-fold",
+        action="store_true",
+        default=None,
+        help="Generate French fold (4 pages, fold twice)",
+    )
+    build_parser.add_argument(
+        "--micro-mini",
+        action="store_true",
+        default=None,
+        help="Generate micro-mini zine (16 pages on 1 double-sided sheet)",
+    )
 
     # serve
     serve_parser = subparsers.add_parser(
@@ -99,7 +111,7 @@ def main():
     )
     serve_parser.add_argument(
         "--mode",
-        choices=["print", "landing", "manual"],
+        choices=["print", "web", "manual"],
         help="Override output mode",
     )
     serve_parser.add_argument(
@@ -182,14 +194,18 @@ def _cmd_build(args):
         config.page_size = args.page_size
     if args.columns is not None:
         config.default_columns = args.columns
-    if args.compact is True:
-        config.compact = True
     if args.dev is True:
         config.dev_mode = True
     if args.booklet is True:
         config.booklet = True
     if args.mini_zine is True:
         config.mini_zine = True
+    if args.trifold is True:
+        config.trifold = True
+    if args.french_fold is True:
+        config.french_fold = True
+    if args.micro_mini is True:
+        config.micro_mini = True
     if args.title:
         config.title = args.title
 
@@ -209,7 +225,7 @@ def _cmd_build(args):
     if args.mode is not None:
         modes = [args.mode]
     else:
-        modes = ["print", "manual", "landing"]
+        modes = ["print", "manual", "web"]
 
     # Build each mode
     for mode in modes:
@@ -219,6 +235,9 @@ def _cmd_build(args):
         if len(modes) > 1:
             mode_config.booklet = False
             mode_config.mini_zine = False
+            mode_config.trifold = False
+            mode_config.french_fold = False
+            mode_config.micro_mini = False
 
         # Output path: explicit -o > single mode (stem.html) > multi-mode (stem-mode.html)
         if args.output:
@@ -261,6 +280,23 @@ def _cmd_build(args):
                 build(source, output=output, config=mini_config)
             except Exception as e:
                 print(f"Error building mini zine: {e}", file=sys.stderr)
+
+        # Other imposition modes
+        _EXTRA_IMPOSITIONS = [
+            ("trifold", "trifold"),
+            ("french_fold", "frenchfold"),
+            ("micro_mini", "micromini"),
+        ]
+        for field, suffix in _EXTRA_IMPOSITIONS:
+            if getattr(config, field, False) and "print" in modes:
+                imp_config = copy.copy(config)
+                imp_config.mode = "print"
+                setattr(imp_config, field, True)
+                output = f"{source_stem}-{suffix}.html"
+                try:
+                    build(source, output=output, config=imp_config)
+                except Exception as e:
+                    print(f"Error building {suffix}: {e}", file=sys.stderr)
 
 
 def _cmd_serve(args):

@@ -68,12 +68,6 @@ def test_five_columns():
     assert MARKERS["FIVECOLUMNS"] in result
 
 
-def test_compact():
-    registry = build_default_registry()
-    result = registry.process("/compact\n")
-    assert MARKERS["COMPACT"] in result
-
-
 def test_large_normal_space():
     registry = build_default_registry()
     result = registry.process("/large\n/normal\n/space\n")

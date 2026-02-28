@@ -60,11 +60,21 @@ fs.writeFileSync(OUTPUT, output, "utf-8");
 
 // Also emit a JSON file for the VSCode extension (safe to parse, no regex needed)
 const JSON_OUTPUT = path.resolve(__dirname, "../src/sources.json");
-fs.writeFileSync(
-  JSON_OUTPUT,
-  JSON.stringify({ pythonSources, themeCss }, null, 2),
-  "utf-8"
-);
+const jsonContent = JSON.stringify({ pythonSources, themeCss }, null, 2);
+fs.writeFileSync(JSON_OUTPUT, jsonContent, "utf-8");
+
+// Also copy to web/public/ so the web worker picks up latest Python sources
+const WEB_PUBLIC = path.resolve(__dirname, "../../web/public");
+if (fs.existsSync(WEB_PUBLIC)) {
+  fs.writeFileSync(path.join(WEB_PUBLIC, "sources.json"), jsonContent, "utf-8");
+}
+
+// Also copy worker.js to web/public/
+const WORKER_SRC = path.resolve(__dirname, "../src/worker.js");
+const WORKER_WEB = path.join(WEB_PUBLIC, "worker.js");
+if (fs.existsSync(WEB_PUBLIC) && fs.existsSync(WORKER_SRC)) {
+  fs.copyFileSync(WORKER_SRC, WORKER_WEB);
+}
 
 console.log(
   `Bundled ${Object.keys(pythonSources).length} Python files + ${Object.keys(themeCss).length} CSS themes → ${OUTPUT} + ${JSON_OUTPUT}`

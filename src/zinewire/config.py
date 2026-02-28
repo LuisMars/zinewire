@@ -41,9 +41,9 @@ class ZineConfig:
     mode: str = "print"  # "print", "web", or "manual"
 
     # Theme - fonts
-    font_heading: str = "Montserrat"
-    font_body: str = "PT Serif"
-    font_mono: str = "Ubuntu Mono"
+    font_heading: str = ""
+    font_body: str = ""
+    font_mono: str = ""
 
     # Theme - font sizes (empty = use defaults from base.css)
     font_size_body: str = ""
@@ -57,7 +57,7 @@ class ZineConfig:
     color_border: str = "#333"
     color_bg_muted: str = "#f5f5f5"
     color_text_muted: str = "#666"
-    color_table_header_bg: str = "#000"
+    color_table_header_bg: str = "#2a2a2a"
     color_table_header_text: str = "#fff"
     color_accent: str = "#2563EB"
 

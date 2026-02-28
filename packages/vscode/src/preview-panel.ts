@@ -53,11 +53,14 @@ export class PreviewPanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
+        localResourceRoots: [
+          vscode.Uri.file(path.join(context.extensionPath, "out")),
+        ],
       }
     );
 
+    // doBuild() is triggered from the webview-ready handshake inside the constructor
     PreviewPanel.instance = new PreviewPanel(panel, context, projectDir, tomlPath);
-    PreviewPanel.instance.doBuild();
   }
 
   static rebuild() {
@@ -85,8 +88,19 @@ export class PreviewPanel {
 
     this.panel.webview.html = this.getWebviewContent();
 
+    // Handshake: WebView signals 'webview-ready' once its listener is registered.
+    // Only then do we send init data and trigger the first build, avoiding the
+    // race where postMessage fires before the external script has loaded.
+    const readyDisposable = this.panel.webview.onDidReceiveMessage((msg) => {
+      if (msg.type === "webview-ready") {
+        this.sendInitData();
+        this.doBuild();
+      }
+    });
+
     this.panel.onDidDispose(() => {
       this.disposed = true;
+      readyDisposable.dispose();
       PreviewPanel.instance = undefined;
     });
   }
@@ -193,39 +207,54 @@ export class PreviewPanel {
     return dataFiles;
   }
 
-  private getWebviewContent(): string {
+  private sendInitData() {
     const outDir = path.join(this.context.extensionPath, "out");
     const sourcesJsonFile = path.join(outDir, "sources.json");
     const workerFile = path.join(outDir, "worker.js");
 
-    let sourcesData = "{}";
-    let themesData = "{}";
+    let sources: Record<string, string> = {};
+    let themes: Record<string, string> = {};
     let workerCode = "";
-
-    // Escape </ sequences to prevent </script> in Python sources from breaking HTML
-    const safeJson = (obj: unknown) =>
-      JSON.stringify(obj).replace(/<\//g, "<\\/");
 
     if (fs.existsSync(sourcesJsonFile)) {
       const data = JSON.parse(fs.readFileSync(sourcesJsonFile, "utf-8"));
-      sourcesData = safeJson(data.pythonSources);
-      themesData = safeJson(data.themeCss);
+      sources = data.pythonSources ?? {};
+      themes = data.themeCss ?? {};
     }
-
     if (fs.existsSync(workerFile)) {
       workerCode = fs.readFileSync(workerFile, "utf-8");
     }
+
+    this.panel.webview.postMessage({ type: "init-data", workerCode, sources, themes });
+  }
+
+  private getWebviewContent(): string {
+    const outDir = path.join(this.context.extensionPath, "out");
+    const uiScriptUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.file(path.join(outDir, "webview-ui.js"))
+    );
+
+    const csp = [
+      `default-src 'none'`,
+      `script-src ${this.panel.webview.cspSource} blob: 'unsafe-eval' https://cdn.jsdelivr.net`,
+      `worker-src blob:`,
+      `style-src 'unsafe-inline'`,
+      `font-src https://fonts.gstatic.com`,
+      `connect-src https://cdn.jsdelivr.net https://files.pythonhosted.org https://pypi.org https://fonts.googleapis.com https://fonts.gstatic.com`,
+      `img-src data: blob:`,
+      `frame-src blob:`,
+    ].join("; ");
 
     return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="${csp}">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; background: #1e1e1e; font-family: -apple-system, system-ui, sans-serif; color: #ccc; }
     body { display: flex; flex-direction: column; }
 
-    /* Toolbar */
     .toolbar {
       display: flex; align-items: center; height: 32px; flex-shrink: 0;
       background: #252526; border-bottom: 1px solid #3c3c3c;
@@ -253,12 +282,8 @@ export class PreviewPanel {
     .sub-tab:hover { color: #bbb; background: #333; }
     .sub-tab.active { color: #ddd; background: #3a3a3a; }
 
-    .sep {
-      width: 1px; height: 16px; background: #444; margin: 0 4px;
-    }
-    .zoom-controls {
-      display: flex; align-items: center; gap: 4px;
-    }
+    .sep { width: 1px; height: 16px; background: #444; margin: 0 4px; }
+    .zoom-controls { display: flex; align-items: center; gap: 4px; }
     .zoom-btn {
       background: transparent; border: none; color: #888;
       font: 600 13px monospace; width: 20px; height: 20px;
@@ -266,9 +291,7 @@ export class PreviewPanel {
       align-items: center; justify-content: center; line-height: 1;
     }
     .zoom-btn:hover { color: #ccc; background: #333; }
-    .zoom-range {
-      width: 80px; accent-color: #666; height: 3px;
-    }
+    .zoom-range { width: 80px; accent-color: #666; height: 3px; }
     .zoom-label {
       font: 500 10px -apple-system, system-ui, sans-serif;
       color: #888; min-width: 30px; text-align: right;
@@ -281,11 +304,7 @@ export class PreviewPanel {
       overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Preview — iframe fills all available space, zoom applied inside */
-    #preview {
-      flex: 1; width: 100%;
-      border: none; display: block;
-    }
+    #preview { flex: 1; width: 100%; border: none; display: block; }
   </style>
 </head>
 <body>
@@ -308,157 +327,7 @@ export class PreviewPanel {
     <span id="status" class="status">Initializing zinewire...</span>
   </div>
   <iframe id="preview" sandbox="allow-scripts allow-same-origin"></iframe>
-
-  <script>
-    var statusEl = document.getElementById('status');
-    var previewEl = document.getElementById('preview');
-    var subTabs = document.getElementById('sub-tabs');
-    var zoomRange = document.getElementById('zoom-range');
-    var zoomLabel = document.getElementById('zoom-label');
-
-    // State
-    var currentMode = 'print';
-    var currentSub = 'default';
-    var lastMarkdown = '';
-    var lastConfig = '';
-    var lastDataFiles = {};
-    var lastHtml = '';
-    var zoom = 1;
-
-    // --- Zoom ---
-    // Inject zoom style into HTML and reload the blob — reliable in any sandbox.
-    function applyZoom() {
-      zoomLabel.textContent = Math.round(zoom * 100) + '%';
-      zoomRange.value = Math.round(zoom * 100);
-      if (lastHtml) {
-        showHtml(lastHtml);
-      }
-    }
-
-    function showHtml(html) {
-      lastHtml = html;
-      if (zoom !== 1) {
-        html = html.replace('</head>', '<style>html{zoom:' + zoom + '}</style></head>');
-      }
-      var blob = new Blob([html], { type: 'text/html' });
-      previewEl.src = URL.createObjectURL(blob);
-    }
-
-    zoomRange.addEventListener('input', function() {
-      zoom = parseInt(zoomRange.value) / 100;
-      applyZoom();
-    });
-    document.getElementById('zoom-out').addEventListener('click', function() {
-      zoom = Math.max(0.25, Math.round((zoom - 0.1) * 20) / 20);
-      applyZoom();
-    });
-    document.getElementById('zoom-in').addEventListener('click', function() {
-      zoom = Math.min(2, Math.round((zoom + 0.1) * 20) / 20);
-      applyZoom();
-    });
-
-    // Worker setup
-    var workerCode = ${safeJson(workerCode)};
-    var workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-    var workerUrl = URL.createObjectURL(workerBlob);
-    var worker = new Worker(workerUrl);
-
-    var sources = ${sourcesData};
-    var themes = ${themesData};
-
-    var ready = false;
-    var pendingBuild = null;
-
-    // --- Imposition detection from TOML config ---
-    function hasImposition(config) {
-      return /^(booklet|mini-zine|trifold|french-fold|micro-mini)\\s*=\\s*true/m.test(config);
-    }
-
-    function updateSubTabs() {
-      var show = currentMode === 'print' && hasImposition(lastConfig);
-      subTabs.classList.toggle('visible', show);
-    }
-
-    // --- Build ---
-    function triggerBuild() {
-      if (!lastMarkdown) return;
-      var singles = currentMode === 'print' && currentSub === 'singles';
-      var msg = { type: 'build', markdown: lastMarkdown, config: lastConfig, mode: currentMode, singles: singles, dataFiles: lastDataFiles };
-      if (ready) {
-        worker.postMessage(msg);
-        statusEl.textContent = 'Building...';
-      } else {
-        pendingBuild = msg;
-      }
-    }
-
-    // --- Mode switching ---
-    document.querySelectorAll('.mode-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        currentMode = btn.dataset.mode;
-        document.querySelectorAll('.mode-btn').forEach(function(b) {
-          b.classList.toggle('active', b.dataset.mode === currentMode);
-        });
-        if (currentMode === 'print' && hasImposition(lastConfig)) {
-          currentSub = 'default';
-          document.querySelectorAll('.sub-tab').forEach(function(t) {
-            t.classList.toggle('active', t.dataset.sub === 'default');
-          });
-        }
-        updateSubTabs();
-        triggerBuild();
-      });
-    });
-
-    // --- Sub-tab switching ---
-    subTabs.addEventListener('click', function(e) {
-      var tab = e.target.closest('.sub-tab');
-      if (!tab) return;
-      currentSub = tab.dataset.sub;
-      document.querySelectorAll('.sub-tab').forEach(function(t) {
-        t.classList.toggle('active', t.dataset.sub === currentSub);
-      });
-      triggerBuild();
-    });
-
-    // --- Worker messages ---
-    worker.onmessage = function(e) {
-      var data = e.data;
-      if (data.type === 'status') {
-        statusEl.textContent = data.msg;
-      } else if (data.type === 'ready') {
-        ready = true;
-        statusEl.textContent = 'Ready';
-        if (pendingBuild) {
-          worker.postMessage(pendingBuild);
-          pendingBuild = null;
-        }
-      } else if (data.type === 'result') {
-        showHtml(data.html);
-        var pages = data.pages > 0 ? ' \\u00b7 ' + data.pages + ' pages' : '';
-        statusEl.textContent = 'Ready' + pages;
-      } else if (data.type === 'error') {
-        statusEl.textContent = 'Error: ' + data.message;
-      }
-    };
-
-    // Initialize worker
-    worker.postMessage({ type: 'init', sources: sources, themes: themes });
-
-    // Listen for content updates from the extension
-    window.addEventListener('message', function(e) {
-      var msg = e.data;
-      if (msg.type === 'update') {
-        lastMarkdown = msg.markdown;
-        lastConfig = msg.config || '';
-        lastDataFiles = msg.dataFiles || {};
-        var dfCount = Object.keys(lastDataFiles).length;
-        statusEl.textContent = 'Update received: ' + lastMarkdown.length + ' chars, ' + dfCount + ' data files';
-        updateSubTabs();
-        triggerBuild();
-      }
-    });
-  </script>
+  <script src="${uiScriptUri}"></script>
 </body>
 </html>`;
   }

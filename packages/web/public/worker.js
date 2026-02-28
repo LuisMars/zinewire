@@ -69,9 +69,28 @@ print(f"zinewire loaded, THEMES_DIR={THEMES_DIR}")
   postMessage({ type: "ready" });
 }
 
-async function doBuild(markdown, configToml, mode) {
+async function doBuild(markdown, configToml, mode, singles, dataFiles) {
   // Write markdown to VFS
   pyodide.FS.writeFile("/tmp/zinewire/input.md", markdown);
+
+  // Write data files (for /table directives) to VFS
+  const dfKeys = dataFiles ? Object.keys(dataFiles) : [];
+  status("Writing " + dfKeys.length + " data files: " + dfKeys.join(", "));
+  if (dataFiles) {
+    for (const [relPath, content] of Object.entries(dataFiles)) {
+      const fullPath = "/tmp/zinewire/" + relPath;
+      // Ensure parent directories exist
+      const dirPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+      const segments = dirPath.split("/");
+      for (let i = 1; i <= segments.length; i++) {
+        const dir = segments.slice(0, i).join("/");
+        if (dir) {
+          try { pyodide.FS.mkdir(dir); } catch (e) { /* exists */ }
+        }
+      }
+      pyodide.FS.writeFile(fullPath, content);
+    }
+  }
 
   const buildScript = `
 import sys, io, traceback
@@ -87,6 +106,7 @@ try:
     config = ZineConfig()
     config_toml = ${JSON.stringify(configToml || "")}
     mode = ${JSON.stringify(mode || "print")}
+    singles = ${singles ? "True" : "False"}
 
     if config_toml.strip():
         import tomllib
@@ -105,10 +125,21 @@ try:
 
     config.mode = mode
 
+    # Singles sub-tab: use reading page size and disable all impositions
+    if singles:
+        w, h = config.reading_page_dimensions
+        config.page_size = w.replace("mm","") + "x" + h.replace("mm","") + "mm"
+        config.booklet = False
+        config.mini_zine = False
+        config.trifold = False
+        config.french_fold = False
+        config.micro_mini = False
+
     html = build(
         source="/tmp/zinewire/input.md",
         output="/tmp/zinewire/output.html",
         config=config,
+        base_dir="/tmp/zinewire",
     )
 
     # Count pages
@@ -152,7 +183,7 @@ self.onmessage = async function (e) {
     }
   } else if (type === "build") {
     try {
-      await doBuild(e.data.markdown, e.data.config, e.data.mode);
+      await doBuild(e.data.markdown, e.data.config, e.data.mode, e.data.singles, e.data.dataFiles);
     } catch (err) {
       postMessage({ type: "error", message: err.message, traceback: err.stack });
     }

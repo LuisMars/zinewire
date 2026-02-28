@@ -38,15 +38,40 @@ def _page_scaling_script(config: ZineConfig) -> str:
     </script>"""
 
 
+def _google_fonts_link(config: ZineConfig) -> str:
+    """Generate Google Fonts <link> tag, or empty string if no custom fonts set."""
+    fonts = [f for f in [config.font_heading, config.font_body, config.font_mono] if f]
+    if not fonts:
+        return ""
+    families = []
+    if config.font_heading:
+        families.append(f"family={_font_url(config.font_heading)}:wght@600;700;800;900")
+    if config.font_body:
+        families.append(f"family={_font_url(config.font_body)}:wght@400;700")
+    if config.font_mono:
+        families.append(f"family={_font_url(config.font_mono)}")
+    url = "https://fonts.googleapis.com/css2?" + "&".join(families) + "&display=swap"
+    return (
+        '\n    <link rel="preconnect" href="https://fonts.googleapis.com">'
+        '\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        f'\n    <link href="{url}" rel="stylesheet">'
+    )
+
+
 def _css_vars(config: ZineConfig) -> str:
     """Generate CSS variable overrides from config."""
     page_width, page_height = config.page_dimensions
     lines = [
         f"        --page-width: {page_width};",
         f"        --page-height: {page_height};",
-        f"        --font-heading: '{config.font_heading}', sans-serif;",
-        f"        --font-body: '{config.font_body}', serif;",
-        f"        --font-mono: '{config.font_mono}', monospace;",
+    ]
+    if config.font_heading:
+        lines.append(f"        --font-heading: '{config.font_heading}', sans-serif;")
+    if config.font_body:
+        lines.append(f"        --font-body: '{config.font_body}', serif;")
+    if config.font_mono:
+        lines.append(f"        --font-mono: '{config.font_mono}', monospace;")
+    lines += [
         f"        --color-text: {config.color_text};",
         f"        --color-border: {config.color_border};",
         f"        --color-bg-muted: {config.color_bg_muted};",
@@ -254,9 +279,7 @@ def render_print(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}
@@ -296,9 +319,7 @@ def render_web(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {web_css}
@@ -340,9 +361,7 @@ def render_manual(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {manual_css}
@@ -408,9 +427,7 @@ def render_mini_zine(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title} (Mini Zine)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}
@@ -465,9 +482,7 @@ def render_trifold(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title} (Tri-fold)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}
@@ -526,9 +541,7 @@ def render_french_fold(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title} (French Fold)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}
@@ -587,9 +600,7 @@ def render_micro_mini(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title} (Micro Mini)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}
@@ -646,9 +657,7 @@ def render_booklet(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{config.title} (Booklet)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={_font_url(config.font_heading)}:wght@600;700;800;900&family={_font_url(config.font_body)}:wght@400;700&family={_font_url(config.font_mono)}&display=swap" rel="stylesheet">
+{_google_fonts_link(config)}
     <style>
 {base_css}
 {print_css}

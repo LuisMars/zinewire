@@ -311,9 +311,24 @@ def _cmd_serve(args):
     config_path = args.config
     source = args.source
 
+    # If positional arg is a .toml file, treat it as the config
+    if source is not None and source.endswith(".toml"):
+        if config_path is None:
+            config_path = source
+        source = None
+
     if config_path is None and source is None:
         if Path("zinewire.toml").exists():
             config_path = "zinewire.toml"
+        else:
+            # Find any .toml in cwd that parses cleanly
+            for candidate in sorted(Path(".").glob("*.toml")):
+                try:
+                    load_config(str(candidate))
+                    config_path = str(candidate)
+                    break
+                except Exception:
+                    continue
 
     if config_path and Path(config_path).exists():
         try:
